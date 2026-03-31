@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="考研学习打卡助手 - 记录学习进度，分析学习习惯，保持考研动力">
+    <title>考研学习打卡助手</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h1>考研学习打卡助手</h1>
+            </div>
+            <div class="date-display" id="current-date">
+                <!-- 日期将通过JS动态显示 -->
+            </div>
+        </header>
+
+        <!-- 主要内容区 -->
+        <main class="main-content main-page">
+            <!-- 左侧：打卡区 -->
+            <section class="card punch-card">
+                <h2><i class="fas fa-calendar-check"></i> 今日打卡</h2>
+                <div class="punch-form">
+                    <div class="form-group">
+                        <label for="subject"><i class="fas fa-book"></i> 学习科目</label>
+                        <select id="subject" class="form-control">
+                            <option value="政治">政治</option>
+                            <option value="英语">英语</option>
+                            <option value="数学">数学</option>
+                            <option value="专业课">专业课</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="duration"><i class="fas fa-clock"></i> 学习时长（分钟）</label>
+                        <input type="number" id="duration" class="form-control" min="1" max="720" value="120" placeholder="输入学习分钟数">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="content"><i class="fas fa-edit"></i> 学习内容</label>
+                        <textarea id="content" class="form-control" rows="3" placeholder="今天学习了什么内容？例如：做了3套真题，背了100个单词..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-smile"></i> 学习状态</label>
+                        <div class="mood-buttons">
+                            <button class="mood-btn active" data-mood="高效">😊 高效</button>
+                            <button class="mood-btn" data-mood="一般">😐 一般</button>
+                            <button class="mood-btn" data-mood="疲惫">😫 疲惫</button>
+                        </div>
+                    </div>
+                    
+                    <button id="punch-btn" class="btn-primary">
+                        <i class="fas fa-check-circle"></i> 完成打卡
+                    </button>
+                </div>
+            </section>
+
+            <!-- 右侧：统计区 -->
+            <section class="card stats-card">
+                <h2><i class="fas fa-chart-line"></i> 学习统计</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="today-duration">0</div>
+                            <div class="stat-label">今日学习(分钟)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-fire"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="streak-days">0</div>
+                            <div class="stat-label">连续打卡(天)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="total-duration">0</div>
+                            <div class="stat-label">总学习时长</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="punch-days">0</div>
+                            <div class="stat-label">累计打卡(天)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <h3><i class="fas fa-bullseye"></i> 今日目标进度</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="goal-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="goal-text">0 / 480 分钟</div>
+                </div>
+                
+                <div class="countdown-container">
+                    <h3><i class="fas fa-hourglass-half"></i> 考研倒计时</h3>
+                    <div class="countdown-display" id="countdown-display">
+                        <div class="countdown-item">
+                            <div class="countdown-value" id="countdown-days">0</div>
+                            <div class="countdown-label">天</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-value" id="countdown-hours">0</div>
+                            <div class="countdown-label">时</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-value" id="countdown-minutes">0</div>
+                            <div class="countdown-label">分</div>
+                        </div>
+                    </div>
+                    <div class="goal-info" id="goal-info">
+                        未设置考研目标，请点击下方"目标"按钮设置
+                    </div>
+                </div>
+            </section>
+
+            <!-- 下方：历史记录区 -->
+            <section class="card history-card full-width">
+                <h2><i class="fas fa-history"></i> 今日打卡记录</h2>
+                <div class="table-responsive">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>科目</th>
+                                <th>时长</th>
+                                <th>内容</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list">
+                            <!-- 记录将通过JS动态生成 -->
+                            <tr id="empty-row">
+                                <td colspan="6" class="empty-message">
+                                    <i class="fas fa-clipboard-list"></i> 今天还没有打卡记录，开始你的第一项学习吧！
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部导航 -->
+        <footer class="footer">
+            <div class="nav-buttons">
+                <button class="nav-btn active" data-page="home">
+                    <i class="fas fa-home"></i> 打卡
+                </button>
+                <button class="nav-btn" data-page="stats">
+                    <i class="fas fa-chart-bar"></i> 统计
+                </button>
+                <button class="nav-btn" data-page="goals">
+                    <i class="fas fa-bullseye"></i> 目标
+                </button>
+                <button class="nav-btn" data-page="settings">
+                    <i class="fas fa-cog"></i> 设置
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 目标设置模态框 -->
+    <div id="goal-modal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-bullseye"></i> 设置考研目标</h2>
+            <div class="form-group">
+                <label for="target-school">目标院校</label>
+                <input type="text" id="target-school" class="form-control" placeholder="例如：清华大学">
+            </div>
+            <div class="form-group">
+                <label for="target-major">目标专业</label>
+                <input type="text" id="target-major" class="form-control" placeholder="例如：计算机科学与技术">
+            </div>
+            <div class="form-group">
+                <label for="exam-date">考研日期</label>
+                <input type="date" id="exam-date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="daily-goal">每日目标（分钟）</label>
+                <input type="number" id="daily-goal" class="form-control" value="480" min="60" max="720">
+            </div>
+            <div class="modal-buttons">
+                <button id="save-goal" class="btn-primary">保存目标</button>
+                <button id="close-goal" class="btn-secondary">稍后设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功提示 -->
+    <div id="success-toast" class="toast">
+        <i class="fas fa-check-circle"></i> 打卡成功！
+    </div>
+
+    <!-- 统计页面（隐藏） -->
+    <div id="stats-page" class="page hidden">
+        <div class="page-header">
+            <button class="back-btn" data-page="home">
+                <i class="fas fa-arrow-left"></i> 返回
+            </button>
+            <h2><i class="fas fa-chart-bar"></i> 详细统计</h2>
+        </div>
+        
+        <div class="stats-container">
+            <!-- 科目分布饼图 -->
+            <div class="chart-card">
+                <h3><i class="fas fa-pie-chart"></i> 科目学习分布</h3>
+                <div class="chart-wrapper">
+                    <canvas id="subject-chart"></canvas>
+                </div>
+            </div>
+            
+            <!-- 最近7天学习趋势 -->
+            <div class="chart-card">
+                <h3><i class="fas fa-line-chart"></i> 最近7天学习趋势</h3>
+                <div class="chart-wrapper">
+                    <canvas id="trend-chart"></canvas>
+                </div>
+            </div>
+            
+            <!-- 学习状态分布 -->
+            <div class="chart-card">
+                <h3><i class="fas fa-smile"></i> 学习状态分布</h3>
+                <div class="chart-wrapper">
+                    <canvas id="mood-chart"></canvas>
+                </div>
+            </div>
+            
+            <!-- 学习时段分布 -->
+            <div class="chart-card">
+                <h3><i class="fas fa-clock"></i> 学习时段偏好</h3>
+                <div class="chart-wrapper">
+                    <canvas id="time-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 设置页面（隐藏） -->
+    <div id="settings-page" class="page hidden">
+        <div class="page-header">
+            <button class="back-btn" data-page="home">
+                <i class="fas fa-arrow-left"></i> 返回
+            </button>
+            <h2><i class="fas fa-cog"></i> 设置</h2>
+        </div>
+        
+        <div class="settings-container">
+            <div class="setting-item">
+                <h3><i class="fas fa-bell"></i> 提醒设置</h3>
+                <div class="setting-control">
+                    <label class="switch">
+                        <input type="checkbox" id="reminder-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span>每日学习提醒</span>
+                </div>
+                <div class="setting-control">
+                    <label for="reminder-time">提醒时间：</label>
+                    <input type="time" id="reminder-time" value="08:00">
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <h3><i class="fas fa-database"></i> 数据管理</h3>
+                <button class="btn-secondary" id="export-btn">
+                    <i class="fas fa-download"></i> 导出所有数据
+                </button>
+                <button class="btn-secondary" id="import-btn">
+                    <i class="fas fa-upload"></i> 导入数据
+                </button>
+                <button class="btn-danger" id="clear-btn">
+                    <i class="fas fa-trash"></i> 清除所有数据
+                </button>
+            </div>
+            
+            <div class="setting-item">
+                <h3><i class="fas fa-moon"></i> 主题设置</h3>
+                <div class="theme-selector">
+                    <button class="theme-btn active" data-theme="light">
+                        <i class="fas fa-sun"></i> 浅色
+                    </button>
+                    <button class="theme-btn" data-theme="dark">
+                        <i class="fas fa-moon"></i> 深色
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
