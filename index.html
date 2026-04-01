@@ -122,32 +122,6 @@
                     </div>
                 </div>
             </section>
-
-            <!-- 下方：历史记录区 -->
-            <section class="card history-card full-width">
-                <h2><i class="fas fa-history"></i> 今日打卡记录</h2>
-                <div class="table-responsive">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>时间</th>
-                                <th>科目</th>
-                                <th>时长</th>
-                                <th>内容</th>
-                                <th>状态</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-list">
-                            <tr id="empty-row">
-                                <td colspan="6" class="empty-message">
-                                    <i class="fas fa-clipboard-list"></i> 今天还没有打卡记录，开始你的第一项学习吧！
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
         </main>
 
         <!-- 统计页面（默认隐藏） -->
@@ -159,6 +133,31 @@
                 <h2><i class="fas fa-chart-bar"></i> 学习数据统计</h2>
             </div>
             <div class="stats-container">
+                <!-- 今日打卡记录 -->
+                <div class="chart-card wide stats-today-card">
+                    <h3><i class="fas fa-clipboard-list"></i> 今日打卡记录</h3>
+                    <div class="table-responsive">
+                        <table class="history-table stats-today-table">
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>科目</th>
+                                    <th>时长</th>
+                                    <th>内容</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stats-today-list">
+                                <tr id="stats-empty-row">
+                                    <td colspan="6" class="empty-message">
+                                        <i class="fas fa-clipboard-list"></i> 今天还没有打卡记录
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 <!-- 顶部数据概览 -->
                 <div class="stats-overview">
                     <div class="overview-item">
@@ -229,6 +228,15 @@
                 <h2><i class="fas fa-cog"></i> 设置</h2>
             </div>
             <div class="settings-container">
+                <div class="setting-item">
+                    <h3><i class="fas fa-bullseye"></i> 考研目标</h3>
+                    <div class="goal-display" id="settings-goal-display">
+                        <p class="goal-display-text" id="goal-display-text">未设置考研目标</p>
+                    </div>
+                    <button class="btn-secondary" id="settings-edit-goal-btn">
+                        <i class="fas fa-edit"></i> 修改目标
+                    </button>
+                </div>
                 <div class="setting-item">
                     <h3><i class="fas fa-bell"></i> 提醒设置</h3>
                     <div class="setting-control">
@@ -324,9 +332,6 @@
                 </button>
                 <button class="nav-btn" data-page="stats">
                     <i class="fas fa-chart-bar"></i> 统计
-                </button>
-                <button class="nav-btn" data-page="goals">
-                    <i class="fas fa-bullseye"></i> 目标
                 </button>
                 <button class="nav-btn" data-page="settings">
                     <i class="fas fa-cog"></i> 设置

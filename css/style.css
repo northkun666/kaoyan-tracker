@@ -722,11 +722,15 @@ select.form-control {
     border-radius: var(--radius-xl);
     padding: 10px;
     box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.3);
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    flex-shrink: 0;
 }
 
 .nav-buttons {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
 }
 
@@ -1630,6 +1634,63 @@ input:checked + .slider:before {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* ===== 设置页目标显示 ===== */
+.goal-display {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+}
+
+.goal-display-text {
+    font-size: 0.92rem;
+    color: var(--color-text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.goal-info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.goal-info-row i {
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.goal-not-set {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* ===== 统计页今日记录卡片 ===== */
+.stats-today-card {
+    margin-bottom: 0;
+}
+
+.stats-today-card h3 {
+    margin-bottom: 14px;
+}
+
+.stats-today-table {
+    font-size: 0.88rem;
+}
+
+.stats-today-table th {
+    font-size: 0.82rem;
+    padding: 10px 12px;
+}
+
+.stats-today-table td {
+    padding: 10px 12px;
 }
 
 /* ===== 资讯页面 ===== */

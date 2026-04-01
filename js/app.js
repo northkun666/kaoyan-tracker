@@ -111,6 +111,11 @@ class KaoyanApp {
             this.loadNewsData(true);
         });
 
+        // 设置页目标按钮
+        document.getElementById('settings-edit-goal-btn')?.addEventListener('click', () => {
+            this.showGoalModal();
+        });
+
         // 恢复主题
         const savedTheme = localStorage.getItem('kaoyan_theme') || 'slate';
         document.body.dataset.theme = savedTheme;
@@ -217,14 +222,12 @@ class KaoyanApp {
                 break;
             case 'stats':
                 statsPage?.classList.remove('hidden');
+                this.updateStatsTodayRecords();
                 setTimeout(() => window.kaoyanCharts?.updateAllCharts(), 150);
-                break;
-            case 'goals':
-                main?.classList.remove('hidden'); // 先显示主页再弹模态框
-                this.showGoalModal();
                 break;
             case 'settings':
                 settingsPage?.classList.remove('hidden');
+                this.updateGoalDisplay();
                 break;
         }
     }
@@ -238,7 +241,6 @@ class KaoyanApp {
         if (el) el.textContent = now.toLocaleDateString('zh-CN', options);
 
         this.updateStats();
-        this.updateHistory();
         this.updateGoalProgress();
         this.updateCountdownDisplay();
     }
@@ -252,26 +254,49 @@ class KaoyanApp {
         set('punch-days', stats.totalPunchDays);
     }
 
-    updateHistory() {
+    // ===================== 设置页目标显示 =====================
+    updateGoalDisplay() {
+        const textEl = document.getElementById('goal-display-text');
+        if (!textEl) return;
+
+        const goal = this.storage.getGoal();
+        if (!goal.targetSchool && !goal.examDate) {
+            textEl.innerHTML = '<span class="goal-not-set">未设置考研目标，点击下方按钮设置</span>';
+            return;
+        }
+
+        const school = goal.targetSchool || '未设置';
+        const major = goal.targetMajor ? `（${goal.targetMajor}）` : '';
+        const date = goal.examDate || '未设置';
+        const daily = goal.dailyGoal ? `${goal.dailyGoal} 分钟/天` : '未设置';
+
+        textEl.innerHTML = `
+            <div class="goal-info-row"><i class="fas fa-school"></i> 目标院校：${school}${major}</div>
+            <div class="goal-info-row"><i class="fas fa-calendar"></i> 考试日期：${date}</div>
+            <div class="goal-info-row"><i class="fas fa-clock"></i> 每日目标：${daily}</div>
+        `;
+    }
+
+    updateStatsTodayRecords() {
         const records = this.storage.getTodayRecords();
-        const list = document.getElementById('history-list');
+        const list = document.getElementById('stats-today-list');
         if (!list) return;
         list.innerHTML = '';
 
         if (records.length === 0) {
             list.innerHTML = `
-                <tr id="empty-row">
+                <tr id="stats-empty-row">
                     <td colspan="6" class="empty-message">
                         <i class="fas fa-clipboard-list"></i>
-                        <span>今天还没有打卡记录，开始你的第一项学习吧！</span>
+                        <span>今天还没有打卡记录</span>
                     </td>
                 </tr>`;
         } else {
-            records.forEach(r => list.appendChild(this.createHistoryRow(r)));
+            records.forEach(r => list.appendChild(this.createStatsTodayRow(r)));
         }
     }
 
-    createHistoryRow(record) {
+    createStatsTodayRow(record) {
         const row = document.createElement('tr');
         const moodClass = { '高效': 'efficient', '一般': 'normal', '疲惫': 'tired' }[record.mood] || 'normal';
         row.innerHTML = `
@@ -293,6 +318,7 @@ class KaoyanApp {
         if (confirm('确定要删除这条打卡记录吗？')) {
             this.storage.deleteRecord(id);
             this.updateUI();
+            this.updateStatsTodayRecords();
             this.showToast('记录已删除', 'info');
         }
     }
@@ -326,7 +352,7 @@ class KaoyanApp {
             if (hoursEl) hoursEl.textContent = '--';
             if (minutesEl) minutesEl.textContent = '--';
             if (infoEl) {
-                infoEl.textContent = '未设置考研目标，请点击下方「目标」按钮设置';
+                infoEl.textContent = '未设置考研目标，请在「设置」页面设置';
                 infoEl.classList.remove('has-goal');
             }
             return;
