@@ -1,5 +1,5 @@
 // 考研打卡助手 - Service Worker
-const CACHE_NAME = 'kaoyan-tracker-v1';
+const CACHE_NAME = 'kaoyan-tracker-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -51,8 +51,8 @@ self.addEventListener('fetch', event => {
         
         // 否则从网络获取
         return fetch(event.request).then(response => {
-          // 检查是否有效响应
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+        // 检查是否有效响应（允许 cors 和 basic 类型）
+        if (!response || response.status !== 200) {
             return response;
           }
           
