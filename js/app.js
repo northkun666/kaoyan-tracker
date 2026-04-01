@@ -761,7 +761,8 @@ class KaoyanApp {
         let html = '';
         const now = new Date();
         const todayStr = this.storage.getTodayDate();
-        const yesterdayStr = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
+        const yesterday = new Date(now.getTime() - 86400000);
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
 
         Object.entries(monthGroups).forEach(([monthKey, days], mIdx) => {
             const [y, m] = monthKey.split('-');
@@ -883,7 +884,7 @@ class KaoyanApp {
 
         this.reminderTimer = setInterval(() => {
             const now = new Date();
-            const today = now.toISOString().split('T')[0];
+            const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
             // 每天只提醒一次
             if (lastReminded === today) return;
@@ -911,6 +912,10 @@ class KaoyanApp {
     }
 
     // ===================== 资讯系统 =====================
+}
+
+// 创建全局应用实例（供内联事件调用）
+const app = new KaoyanApp();
     async loadNewsData(forceRefresh = false) {
         const container = document.getElementById('news-page-content');
         const loading = document.getElementById('news-loading');

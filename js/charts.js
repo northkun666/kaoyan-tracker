@@ -332,7 +332,7 @@ class KaoyanCharts {
         for (let i = 29; i >= 0; i--) {
             const d = new Date(today);
             d.setDate(d.getDate() - i);
-            const key = d.toISOString().split('T')[0];
+            const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             labels.push(i % 5 === 0 || i === 0 ? `${d.getMonth()+1}/${d.getDate()}` : '');
             const dayRecs = allRecords[key] || [];
             durations.push(dayRecs.reduce((s, r) => s + r.duration, 0));

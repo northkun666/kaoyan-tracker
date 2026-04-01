@@ -143,7 +143,9 @@ class KaoyanStorage {
         let lastDate = null;
         
         for (let i = dates.length - 1; i >= 0; i--) {
-            const currentDate = new Date(dates[i]);
+            // 用本地时间解析日期（避免 UTC 时区偏移）
+            const [y, m, d] = dates[i].split('-').map(Number);
+            const currentDate = new Date(y, m - 1, d);
             
             if (lastDate === null) {
                 streak = 1;
@@ -190,10 +192,13 @@ class KaoyanStorage {
         return stats.subjectStats || {};
     }
     
-    // 获取日期字符串（YYYY-MM-DD）
+    // 获取日期字符串（YYYY-MM-DD），使用本地时区
     getTodayDate() {
         const now = new Date();
-        return now.toISOString().split('T')[0];
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
     
     // 格式化日期显示
