@@ -20,12 +20,10 @@
                 <i class="fas fa-graduation-cap"></i>
                 <h1>考研学习打卡助手</h1>
             </div>
-            <div class="date-display" id="current-date">
-                <!-- 日期将通过JS动态显示 -->
-            </div>
+            <div class="date-display" id="current-date"></div>
         </header>
 
-        <!-- 主要内容区 -->
+        <!-- 主页 -->
         <main class="main-content main-page">
             <!-- 左侧：打卡区 -->
             <section class="card punch-card">
@@ -41,17 +39,14 @@
                             <option value="其他">其他</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label for="duration"><i class="fas fa-clock"></i> 学习时长（分钟）</label>
                         <input type="number" id="duration" class="form-control" min="1" max="720" value="120" placeholder="输入学习分钟数">
                     </div>
-                    
                     <div class="form-group">
                         <label for="content"><i class="fas fa-edit"></i> 学习内容</label>
                         <textarea id="content" class="form-control" rows="3" placeholder="今天学习了什么内容？例如：做了3套真题，背了100个单词..."></textarea>
                     </div>
-                    
                     <div class="form-group">
                         <label><i class="fas fa-smile"></i> 学习状态</label>
                         <div class="mood-buttons">
@@ -60,7 +55,6 @@
                             <button class="mood-btn" data-mood="疲惫">😫 疲惫</button>
                         </div>
                     </div>
-                    
                     <button id="punch-btn" class="btn-primary">
                         <i class="fas fa-check-circle"></i> 完成打卡
                     </button>
@@ -78,7 +72,6 @@
                             <div class="stat-label">今日学习(分钟)</div>
                         </div>
                     </div>
-                    
                     <div class="stat-item">
                         <div class="stat-icon"><i class="fas fa-fire"></i></div>
                         <div class="stat-info">
@@ -86,7 +79,6 @@
                             <div class="stat-label">连续打卡(天)</div>
                         </div>
                     </div>
-                    
                     <div class="stat-item">
                         <div class="stat-icon"><i class="fas fa-clock"></i></div>
                         <div class="stat-info">
@@ -94,7 +86,6 @@
                             <div class="stat-label">总学习时长</div>
                         </div>
                     </div>
-                    
                     <div class="stat-item">
                         <div class="stat-icon"><i class="fas fa-trophy"></i></div>
                         <div class="stat-info">
@@ -103,7 +94,6 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="progress-container">
                     <h3><i class="fas fa-bullseye"></i> 今日目标进度</h3>
                     <div class="progress-bar">
@@ -111,7 +101,6 @@
                     </div>
                     <div class="progress-text" id="goal-text">0 / 480 分钟</div>
                 </div>
-                
                 <div class="countdown-container">
                     <h3><i class="fas fa-hourglass-half"></i> 考研倒计时</h3>
                     <div class="countdown-display" id="countdown-display">
@@ -150,7 +139,6 @@
                             </tr>
                         </thead>
                         <tbody id="history-list">
-                            <!-- 记录将通过JS动态生成 -->
                             <tr id="empty-row">
                                 <td colspan="6" class="empty-message">
                                     <i class="fas fa-clipboard-list"></i> 今天还没有打卡记录，开始你的第一项学习吧！
@@ -161,6 +149,134 @@
                 </div>
             </section>
         </main>
+
+        <!-- 统计页面（默认隐藏） -->
+        <div id="stats-page" class="page hidden">
+            <div class="page-header">
+                <button class="back-btn" data-page="home">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+                <h2><i class="fas fa-chart-bar"></i> 学习数据统计</h2>
+            </div>
+            <div class="stats-container">
+                <!-- 顶部数据概览 -->
+                <div class="stats-overview">
+                    <div class="overview-item">
+                        <div class="ov-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div class="ov-value" id="ov-total-days">0</div>
+                        <div class="ov-label">累计打卡天数</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="ov-icon"><i class="fas fa-clock"></i></div>
+                        <div class="ov-value" id="ov-total-hours">0</div>
+                        <div class="ov-label">总学习小时数</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="ov-icon"><i class="fas fa-fire"></i></div>
+                        <div class="ov-value" id="ov-streak">0</div>
+                        <div class="ov-label">当前连续天数</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="ov-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="ov-value" id="ov-avg">0</div>
+                        <div class="ov-label">日均学习(分钟)</div>
+                    </div>
+                </div>
+                <!-- 最近30天趋势 -->
+                <div class="chart-card wide">
+                    <h3><i class="fas fa-chart-area"></i> 最近30天学习趋势</h3>
+                    <div class="chart-wrapper tall">
+                        <canvas id="trend-chart"></canvas>
+                    </div>
+                </div>
+                <!-- 科目分布饼图 -->
+                <div class="chart-card">
+                    <h3><i class="fas fa-circle-nodes"></i> 科目学习分布</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="subject-chart"></canvas>
+                    </div>
+                </div>
+                <!-- 学习状态环形图 -->
+                <div class="chart-card">
+                    <h3><i class="fas fa-smile"></i> 学习状态分布</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="mood-chart"></canvas>
+                    </div>
+                </div>
+                <!-- 学习时段柱状图 -->
+                <div class="chart-card">
+                    <h3><i class="fas fa-sun"></i> 学习时段偏好</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="time-chart"></canvas>
+                    </div>
+                </div>
+                <!-- 周均分布 -->
+                <div class="chart-card">
+                    <h3><i class="fas fa-calendar-week"></i> 周均学习分布</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="weekday-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置页面（默认隐藏） -->
+        <div id="settings-page" class="page hidden">
+            <div class="page-header">
+                <button class="back-btn" data-page="home">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+                <h2><i class="fas fa-cog"></i> 设置</h2>
+            </div>
+            <div class="settings-container">
+                <div class="setting-item">
+                    <h3><i class="fas fa-bell"></i> 提醒设置</h3>
+                    <div class="setting-control">
+                        <label class="switch">
+                            <input type="checkbox" id="reminder-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span>每日学习提醒</span>
+                    </div>
+                    <div class="setting-control">
+                        <label for="reminder-time">提醒时间：</label>
+                        <input type="time" id="reminder-time" value="08:00">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <h3><i class="fas fa-database"></i> 数据管理</h3>
+                    <button class="btn-secondary" id="export-btn">
+                        <i class="fas fa-download"></i> 导出所有数据
+                    </button>
+                    <button class="btn-secondary" id="import-btn">
+                        <i class="fas fa-upload"></i> 导入数据
+                    </button>
+                    <button class="btn-danger" id="clear-btn">
+                        <i class="fas fa-trash"></i> 清除所有数据
+                    </button>
+                </div>
+                <div class="setting-item">
+                    <h3><i class="fas fa-palette"></i> 主题配色</h3>
+                    <div class="theme-selector">
+                        <button class="theme-btn active" data-theme="slate">
+                            <span class="theme-swatch swatch-slate"></span> 石青
+                        </button>
+                        <button class="theme-btn" data-theme="sand">
+                            <span class="theme-swatch swatch-sand"></span> 暖沙
+                        </button>
+                        <button class="theme-btn" data-theme="sage">
+                            <span class="theme-swatch swatch-sage"></span> 茶绿
+                        </button>
+                        <button class="theme-btn" data-theme="lavender">
+                            <span class="theme-swatch swatch-lavender"></span> 薰衣
+                        </button>
+                        <button class="theme-btn" data-theme="dark">
+                            <span class="theme-swatch swatch-dark"></span> 深色
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- 底部导航 -->
         <footer class="footer">
@@ -204,148 +320,6 @@
             <div class="modal-buttons">
                 <button id="save-goal" class="btn-primary">保存目标</button>
                 <button id="close-goal" class="btn-secondary">稍后设置</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 成功提示 -->
-    <div id="success-toast" class="toast">
-        <i class="fas fa-check-circle"></i> 打卡成功！
-    </div>
-
-    <!-- 统计页面（隐藏） -->
-    <div id="stats-page" class="page hidden">
-        <div class="page-header">
-            <button class="back-btn" data-page="home">
-                <i class="fas fa-arrow-left"></i> 返回
-            </button>
-            <h2><i class="fas fa-chart-bar"></i> 学习数据统计</h2>
-        </div>
-
-        <div class="stats-container">
-            <!-- 顶部数据概览 -->
-            <div class="stats-overview">
-                <div class="overview-item">
-                    <div class="ov-icon"><i class="fas fa-calendar-check"></i></div>
-                    <div class="ov-value" id="ov-total-days">0</div>
-                    <div class="ov-label">累计打卡天数</div>
-                </div>
-                <div class="overview-item">
-                    <div class="ov-icon"><i class="fas fa-clock"></i></div>
-                    <div class="ov-value" id="ov-total-hours">0</div>
-                    <div class="ov-label">总学习小时数</div>
-                </div>
-                <div class="overview-item">
-                    <div class="ov-icon"><i class="fas fa-fire"></i></div>
-                    <div class="ov-value" id="ov-streak">0</div>
-                    <div class="ov-label">当前连续天数</div>
-                </div>
-                <div class="overview-item">
-                    <div class="ov-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="ov-value" id="ov-avg">0</div>
-                    <div class="ov-label">日均学习(分钟)</div>
-                </div>
-            </div>
-
-            <!-- 最近30天趋势（宽图） -->
-            <div class="chart-card wide">
-                <h3><i class="fas fa-chart-area"></i> 最近30天学习趋势</h3>
-                <div class="chart-wrapper tall">
-                    <canvas id="trend-chart"></canvas>
-                </div>
-            </div>
-
-            <!-- 科目分布饼图 -->
-            <div class="chart-card">
-                <h3><i class="fas fa-circle-nodes"></i> 科目学习分布</h3>
-                <div class="chart-wrapper">
-                    <canvas id="subject-chart"></canvas>
-                </div>
-            </div>
-
-            <!-- 学习状态环形图 -->
-            <div class="chart-card">
-                <h3><i class="fas fa-smile"></i> 学习状态分布</h3>
-                <div class="chart-wrapper">
-                    <canvas id="mood-chart"></canvas>
-                </div>
-            </div>
-
-            <!-- 学习时段柱状图 -->
-            <div class="chart-card">
-                <h3><i class="fas fa-sun"></i> 学习时段偏好</h3>
-                <div class="chart-wrapper">
-                    <canvas id="time-chart"></canvas>
-                </div>
-            </div>
-
-            <!-- 每周热力图 -->
-            <div class="chart-card">
-                <h3><i class="fas fa-calendar-week"></i> 周均学习分布</h3>
-                <div class="chart-wrapper">
-                    <canvas id="weekday-chart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 设置页面（隐藏） -->
-    <div id="settings-page" class="page hidden">
-        <div class="page-header">
-            <button class="back-btn" data-page="home">
-                <i class="fas fa-arrow-left"></i> 返回
-            </button>
-            <h2><i class="fas fa-cog"></i> 设置</h2>
-        </div>
-        
-        <div class="settings-container">
-            <div class="setting-item">
-                <h3><i class="fas fa-bell"></i> 提醒设置</h3>
-                <div class="setting-control">
-                    <label class="switch">
-                        <input type="checkbox" id="reminder-toggle">
-                        <span class="slider"></span>
-                    </label>
-                    <span>每日学习提醒</span>
-                </div>
-                <div class="setting-control">
-                    <label for="reminder-time">提醒时间：</label>
-                    <input type="time" id="reminder-time" value="08:00">
-                </div>
-            </div>
-            
-            <div class="setting-item">
-                <h3><i class="fas fa-database"></i> 数据管理</h3>
-                <button class="btn-secondary" id="export-btn">
-                    <i class="fas fa-download"></i> 导出所有数据
-                </button>
-                <button class="btn-secondary" id="import-btn">
-                    <i class="fas fa-upload"></i> 导入数据
-                </button>
-                <button class="btn-danger" id="clear-btn">
-                    <i class="fas fa-trash"></i> 清除所有数据
-                </button>
-            </div>
-            
-            <div class="setting-item">
-                <h3><i class="fas fa-palette"></i> 主题配色</h3>
-                <div class="theme-selector">
-                    <button class="theme-btn active" data-theme="slate">
-                        <span class="theme-swatch swatch-slate"></span> 石青
-                    </button>
-                    <button class="theme-btn" data-theme="sand">
-                        <span class="theme-swatch swatch-sand"></span> 暖沙
-                    </button>
-                    <button class="theme-btn" data-theme="sage">
-                        <span class="theme-swatch swatch-sage"></span> 茶绿
-                    </button>
-                    <button class="theme-btn" data-theme="lavender">
-                        <span class="theme-swatch swatch-lavender"></span> 薰衣
-                    </button>
-                    <button class="theme-btn" data-theme="dark">
-                        <span class="theme-swatch swatch-dark"></span> 深色
-                    </button>
-                </div>
             </div>
         </div>
     </div>

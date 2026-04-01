@@ -819,11 +819,13 @@ select.form-control {
 
 /* ===== 页面切换 ===== */
 .page {
-    display: none;
     animation: fadeSlideIn var(--transition-normal);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 16px;
 }
-
-.page.active { display: block; }
 
 @keyframes fadeSlideIn {
     from { opacity: 0; transform: translateY(8px); }
