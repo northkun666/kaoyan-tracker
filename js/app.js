@@ -6,6 +6,8 @@ class KaoyanApp {
         this.currentMood = '高效';
         this.countdownTimer = null;
         this.reminderTimer = null;
+        this.newsData = null;
+        this.newsBasePath = '';
         this.init();
     }
 
@@ -18,6 +20,7 @@ class KaoyanApp {
     }
 
     _boot() {
+        this.detectNewsBasePath();
         this.setupEventListeners();
         this.updateUI();
         this.startCountdownTimer();
@@ -26,6 +29,17 @@ class KaoyanApp {
         this.initAchievements();
         this.initReminder();
         this.checkWeeklyReport();
+    }
+
+    // ===================== 资讯数据路径 =====================
+    detectNewsBasePath() {
+        // GitHub Pages 部署在子目录时需要路径前缀
+        const path = window.location.pathname;
+        if (path.includes('/kaoyan-tracker/')) {
+            this.newsBasePath = '/kaoyan-tracker';
+        } else {
+            this.newsBasePath = '';
+        }
     }
 
     setupEventListeners() {
@@ -90,6 +104,11 @@ class KaoyanApp {
                 document.body.dataset.theme = theme;
                 localStorage.setItem('kaoyan_theme', theme);
             });
+        });
+
+        // 资讯刷新按钮
+        document.getElementById('news-refresh-btn')?.addEventListener('click', () => {
+            this.loadNewsData(true);
         });
 
         // 恢复主题
@@ -175,11 +194,13 @@ class KaoyanApp {
         const statsPage = document.getElementById('stats-page');
         const settingsPage = document.getElementById('settings-page');
         const historyPage = document.getElementById('history-page');
+        const newsPage = document.getElementById('news-page');
 
         main?.classList.add('hidden');
         statsPage?.classList.add('hidden');
         settingsPage?.classList.add('hidden');
         historyPage?.classList.add('hidden');
+        newsPage?.classList.add('hidden');
 
         switch (page) {
             case 'home':
@@ -189,6 +210,10 @@ class KaoyanApp {
             case 'history':
                 historyPage?.classList.remove('hidden');
                 this.renderHistoryPage();
+                break;
+            case 'news':
+                newsPage?.classList.remove('hidden');
+                this.loadNewsData();
                 break;
             case 'stats':
                 statsPage?.classList.remove('hidden');
@@ -858,7 +883,118 @@ class KaoyanApp {
             }
         }, 30000); // 每30秒检查一次
     }
-}
 
-// 启动应用
-const app = new KaoyanApp();
+    // ===================== 资讯系统 =====================
+    async loadNewsData(forceRefresh = false) {
+        const container = document.getElementById('news-page-content');
+        const loading = document.getElementById('news-loading');
+        const refreshBtn = document.getElementById('news-refresh-btn');
+
+        if (!container) return;
+
+        // 如果已加载且未强制刷新，直接渲染
+        if (this.newsData && !forceRefresh) {
+            this.renderNewsPage();
+            return;
+        }
+
+        // 显示加载状态
+        if (loading) loading.style.display = 'flex';
+        if (refreshBtn) refreshBtn.disabled = true;
+
+        try {
+            const newsUrl = `${this.newsBasePath}/data/news.json`;
+            const response = await fetch(newsUrl + `?t=${new Date().getTime()}`);
+            
+            if (!response.ok) throw new Error('Failed to fetch news');
+            
+            const data = await response.json();
+            this.newsData = data.news || [];
+            
+            // 缓存到 localStorage
+            localStorage.setItem('kaoyan_news_cache', JSON.stringify(this.newsData));
+            localStorage.setItem('kaoyan_news_cache_time', new Date().toISOString());
+            
+            this.renderNewsPage();
+        } catch (error) {
+            console.error('Error loading news:', error);
+            
+            // 尝试从缓存加载
+            const cached = localStorage.getItem('kaoyan_news_cache');
+            if (cached) {
+                this.newsData = JSON.parse(cached);
+                this.renderNewsPage();
+                this.showToast('📰 使用缓存资讯', 'info');
+            } else {
+                if (container) {
+                    container.innerHTML = `
+                        <div class="news-error-state">
+                            <i class="fas fa-wifi-slash"></i>
+                            <p>无法加载资讯</p>
+                            <p class="news-error-hint">请检查网络连接或稍后重试</p>
+                        </div>`;
+                }
+                this.showToast('⚠️ 资讯加载失败，请检查网络', 'error');
+            }
+        } finally {
+            if (loading) loading.style.display = 'none';
+            if (refreshBtn) refreshBtn.disabled = false;
+        }
+    }
+
+    renderNewsPage() {
+        const container = document.getElementById('news-page-content');
+        if (!container || !this.newsData) return;
+
+        if (this.newsData.length === 0) {
+            container.innerHTML = `
+                <div class="news-empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>暂无资讯更新</p>
+                    <p class="news-empty-hint">敬请期待后续考研资讯推送</p>
+                </div>`;
+            return;
+        }
+
+        // 按分类分组
+        const grouped = {};
+        this.newsData.forEach(news => {
+            const cat = news.category || '其他';
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(news);
+        });
+
+        let html = '';
+        Object.entries(grouped).forEach(([category, items]) => {
+            html += `<div class="news-category">
+                <div class="news-category-title">
+                    <i class="fas fa-bookmark"></i> ${category}
+                </div>
+                <div class="news-list">`;
+            
+            items.forEach(news => {
+                const date = new Date(news.date + 'T00:00:00').toLocaleDateString('zh-CN');
+                html += `
+                    <div class="news-item">
+                        <div class="news-item-header">
+                            <h3 class="news-item-title">${news.title}</h3>
+                            <span class="news-item-date">${date}</span>
+                        </div>
+                        <p class="news-item-summary">${news.summary}</p>
+                        <div class="news-item-footer">
+                            <span class="news-item-source">
+                                <i class="fas fa-link"></i> ${news.source}
+                            </span>
+                            ${news.url ? `<a href="${news.url}" target="_blank" class="news-item-link">
+                                <i class="fas fa-external-link-alt"></i> 查看全文
+                            </a>` : ''}
+                        </div>
+                    </div>`;
+            });
+
+            html += `</div></div>`;
+        });
+
+        container.innerHTML = html;
+    }
+}

@@ -291,6 +291,25 @@
             </div>
         </div>
 
+        <!-- 资讯页面（默认隐藏） -->
+        <div id="news-page" class="page hidden">
+            <div class="page-header">
+                <button class="back-btn" data-page="home">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+                <h2><i class="fas fa-newspaper"></i> 考研资讯</h2>
+                <button class="news-refresh-btn" id="news-refresh-btn" title="刷新资讯">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div class="news-page-container" id="news-page-content">
+                <div class="news-loading" id="news-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>正在加载资讯...</span>
+                </div>
+            </div>
+        </div>
+
         <!-- 底部导航 -->
         <footer class="footer">
             <div class="nav-buttons">
@@ -299,6 +318,9 @@
                 </button>
                 <button class="nav-btn" data-page="history">
                     <i class="fas fa-history"></i> 记录
+                </button>
+                <button class="nav-btn" data-page="news">
+                    <i class="fas fa-newspaper"></i> 资讯
                 </button>
                 <button class="nav-btn" data-page="stats">
                     <i class="fas fa-chart-bar"></i> 统计
