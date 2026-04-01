@@ -219,39 +219,71 @@
             <button class="back-btn" data-page="home">
                 <i class="fas fa-arrow-left"></i> 返回
             </button>
-            <h2><i class="fas fa-chart-bar"></i> 详细统计</h2>
+            <h2><i class="fas fa-chart-bar"></i> 学习数据统计</h2>
         </div>
-        
+
         <div class="stats-container">
+            <!-- 顶部数据概览 -->
+            <div class="stats-overview">
+                <div class="overview-item">
+                    <div class="ov-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="ov-value" id="ov-total-days">0</div>
+                    <div class="ov-label">累计打卡天数</div>
+                </div>
+                <div class="overview-item">
+                    <div class="ov-icon"><i class="fas fa-clock"></i></div>
+                    <div class="ov-value" id="ov-total-hours">0</div>
+                    <div class="ov-label">总学习小时数</div>
+                </div>
+                <div class="overview-item">
+                    <div class="ov-icon"><i class="fas fa-fire"></i></div>
+                    <div class="ov-value" id="ov-streak">0</div>
+                    <div class="ov-label">当前连续天数</div>
+                </div>
+                <div class="overview-item">
+                    <div class="ov-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="ov-value" id="ov-avg">0</div>
+                    <div class="ov-label">日均学习(分钟)</div>
+                </div>
+            </div>
+
+            <!-- 最近30天趋势（宽图） -->
+            <div class="chart-card wide">
+                <h3><i class="fas fa-chart-area"></i> 最近30天学习趋势</h3>
+                <div class="chart-wrapper tall">
+                    <canvas id="trend-chart"></canvas>
+                </div>
+            </div>
+
             <!-- 科目分布饼图 -->
             <div class="chart-card">
-                <h3><i class="fas fa-pie-chart"></i> 科目学习分布</h3>
+                <h3><i class="fas fa-circle-nodes"></i> 科目学习分布</h3>
                 <div class="chart-wrapper">
                     <canvas id="subject-chart"></canvas>
                 </div>
             </div>
-            
-            <!-- 最近7天学习趋势 -->
-            <div class="chart-card">
-                <h3><i class="fas fa-line-chart"></i> 最近7天学习趋势</h3>
-                <div class="chart-wrapper">
-                    <canvas id="trend-chart"></canvas>
-                </div>
-            </div>
-            
-            <!-- 学习状态分布 -->
+
+            <!-- 学习状态环形图 -->
             <div class="chart-card">
                 <h3><i class="fas fa-smile"></i> 学习状态分布</h3>
                 <div class="chart-wrapper">
                     <canvas id="mood-chart"></canvas>
                 </div>
             </div>
-            
-            <!-- 学习时段分布 -->
+
+            <!-- 学习时段柱状图 -->
             <div class="chart-card">
-                <h3><i class="fas fa-clock"></i> 学习时段偏好</h3>
+                <h3><i class="fas fa-sun"></i> 学习时段偏好</h3>
                 <div class="chart-wrapper">
                     <canvas id="time-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- 每周热力图 -->
+            <div class="chart-card">
+                <h3><i class="fas fa-calendar-week"></i> 周均学习分布</h3>
+                <div class="chart-wrapper">
+                    <canvas id="weekday-chart"></canvas>
                 </div>
             </div>
         </div>
@@ -296,13 +328,22 @@
             </div>
             
             <div class="setting-item">
-                <h3><i class="fas fa-moon"></i> 主题设置</h3>
+                <h3><i class="fas fa-palette"></i> 主题配色</h3>
                 <div class="theme-selector">
-                    <button class="theme-btn active" data-theme="light">
-                        <i class="fas fa-sun"></i> 浅色
+                    <button class="theme-btn active" data-theme="slate">
+                        <span class="theme-swatch swatch-slate"></span> 石青
+                    </button>
+                    <button class="theme-btn" data-theme="sand">
+                        <span class="theme-swatch swatch-sand"></span> 暖沙
+                    </button>
+                    <button class="theme-btn" data-theme="sage">
+                        <span class="theme-swatch swatch-sage"></span> 茶绿
+                    </button>
+                    <button class="theme-btn" data-theme="lavender">
+                        <span class="theme-swatch swatch-lavender"></span> 薰衣
                     </button>
                     <button class="theme-btn" data-theme="dark">
-                        <i class="fas fa-moon"></i> 深色
+                        <span class="theme-swatch swatch-dark"></span> 深色
                     </button>
                 </div>
             </div>

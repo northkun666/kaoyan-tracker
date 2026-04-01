@@ -67,9 +67,9 @@ class KaoyanApp {
         document.getElementById('import-btn')?.addEventListener('click', () => this.importData());
         document.getElementById('clear-btn')?.addEventListener('click', () => this.clearData());
 
-        // 主题切换按钮
+        // 主题切换按钮（5套主题）
         document.querySelectorAll('.theme-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 const theme = btn.dataset.theme;
@@ -79,7 +79,7 @@ class KaoyanApp {
         });
 
         // 恢复主题
-        const savedTheme = localStorage.getItem('kaoyan_theme') || 'light';
+        const savedTheme = localStorage.getItem('kaoyan_theme') || 'slate';
         document.body.dataset.theme = savedTheme;
         document.querySelector(`.theme-btn[data-theme="${savedTheme}"]`)?.classList.add('active');
     }
