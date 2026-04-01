@@ -912,10 +912,6 @@ class KaoyanApp {
     }
 
     // ===================== 资讯系统 =====================
-}
-
-// 创建全局应用实例（供内联事件调用）
-const app = new KaoyanApp();
     async loadNewsData(forceRefresh = false) {
         const container = document.getElementById('news-page-content');
         const loading = document.getElementById('news-loading');
@@ -1029,3 +1025,6 @@ const app = new KaoyanApp();
         container.innerHTML = html;
     }
 }
+
+// 创建全局应用实例（供内联事件调用）
+const app = new KaoyanApp();
