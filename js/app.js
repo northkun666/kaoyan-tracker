@@ -5,6 +5,7 @@ class KaoyanApp {
         this.storage = storage;
         this.currentMood = '高效';
         this.countdownTimer = null;
+        this.reminderTimer = null;
         this.init();
     }
 
@@ -22,6 +23,9 @@ class KaoyanApp {
         this.startCountdownTimer();
         this.registerServiceWorker();
         this.checkFirstTime();
+        this.initAchievements();
+        this.initReminder();
+        this.checkWeeklyReport();
     }
 
     setupEventListeners() {
@@ -46,6 +50,16 @@ class KaoyanApp {
         document.getElementById('goal-modal')?.addEventListener('click', (e) => {
             if (e.target === e.currentTarget) this.hideGoalModal();
         });
+        document.getElementById('achievement-modal')?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.hideAchievementModal();
+        });
+        document.getElementById('weekly-modal')?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.hideWeeklyModal();
+        });
+
+        // 成就和周报关闭按钮
+        document.getElementById('close-achievement')?.addEventListener('click', () => this.hideAchievementModal());
+        document.getElementById('close-weekly')?.addEventListener('click', () => this.hideWeeklyModal());
 
         // 输入框快捷键
         document.getElementById('duration')?.addEventListener('keypress', (e) => {
@@ -82,6 +96,20 @@ class KaoyanApp {
         const savedTheme = localStorage.getItem('kaoyan_theme') || 'slate';
         document.body.dataset.theme = savedTheme;
         document.querySelector(`.theme-btn[data-theme="${savedTheme}"]`)?.classList.add('active');
+
+        // 提醒设置
+        document.getElementById('reminder-toggle')?.addEventListener('change', (e) => {
+            this.toggleReminder(e.target.checked);
+        });
+        document.getElementById('reminder-time')?.addEventListener('change', (e) => {
+            localStorage.setItem('kaoyan_reminder_time', e.target.value);
+            if (this.reminderTimer) {
+                clearInterval(this.reminderTimer);
+                this.reminderTimer = null;
+            }
+            const toggle = document.getElementById('reminder-toggle');
+            if (toggle?.checked) this.startReminderTimer(e.target.value);
+        });
     }
 
     // ===================== 打卡逻辑 =====================
@@ -116,6 +144,9 @@ class KaoyanApp {
         durationInput.value = '120';
         this.updateUI();
         contentInput.focus();
+
+        // 检查成就
+        this.checkAchievements();
     }
 
     handleMoodSelect(event) {
@@ -143,15 +174,21 @@ class KaoyanApp {
         const main = document.querySelector('.main-content');
         const statsPage = document.getElementById('stats-page');
         const settingsPage = document.getElementById('settings-page');
+        const historyPage = document.getElementById('history-page');
 
         main?.classList.add('hidden');
         statsPage?.classList.add('hidden');
         settingsPage?.classList.add('hidden');
+        historyPage?.classList.add('hidden');
 
         switch (page) {
             case 'home':
                 main?.classList.remove('hidden');
                 this.updateUI();
+                break;
+            case 'history':
+                historyPage?.classList.remove('hidden');
+                this.renderHistoryPage();
                 break;
             case 'stats':
                 statsPage?.classList.remove('hidden');
@@ -432,6 +469,394 @@ class KaoyanApp {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});
         }
+    }
+
+    // ===================== 成就系统 =====================
+    initAchievements() {
+        // 确保成就数据已初始化
+        if (!localStorage.getItem('kaoyan_achievements')) {
+            localStorage.setItem('kaoyan_achievements', JSON.stringify({}));
+        }
+    }
+
+    checkAchievements() {
+        const stats = this.storage.getStats();
+        const streak = stats.streakDays;
+        const totalDays = stats.totalPunchDays;
+
+        const milestones = [
+            { key: 'streak_7',  type: 'streak', value: 7,   icon: 'fa-fire',        title: '🔥 连续7天打卡！', desc: '坚持就是胜利，你已经连续打卡一周了！' },
+            { key: 'streak_30', type: 'streak', value: 30,  icon: 'fa-fire-flame-curved', title: '🔥 连续30天打卡！', desc: '一个月不间断，你的毅力令人佩服！' },
+            { key: 'streak_100',type: 'streak', value: 100, icon: 'fa-meteor',       title: '☄️ 连续100天打卡！', desc: '百日征途，你已经是真正的考研战士！' },
+            { key: 'streak_365',type: 'streak', value: 365, icon: 'fa-crown',        title: '👑 连续365天打卡！', desc: '整整一年！你就是考研界的传奇！' },
+            { key: 'days_7',    type: 'total',  value: 7,   icon: 'fa-seedling',     title: '🌱 初出茅庐', desc: '累计打卡7天，种下了一颗学习的种子！' },
+            { key: 'days_30',   type: 'total',  value: 30,  icon: 'fa-leaf',         title: '🌿 茁壮成长', desc: '累计打卡30天，学习之树正在成长！' },
+            { key: 'days_100',  type: 'total',  value: 100, icon: 'fa-tree',         title: '🌳 学海无涯', desc: '累计打卡100天，已经是一棵大树了！' },
+            { key: 'days_200',  type: 'total',  value: 200, icon: 'fa-star',         title: '⭐ 星辰大海', desc: '200天，你的努力已经可以汇聚成星辰！' },
+            { key: 'hours_100', type: 'hours',  value: 100, icon: 'fa-hourglass-half', title: '⏳ 百时之功', desc: '累计学习100小时，厚积薄发！' },
+            { key: 'hours_500', type: 'hours',  value: 500, icon: 'fa-hourglass-end', title: '🏆 五百时辰', desc: '累计学习500小时，知识的力量无可估量！' },
+        ];
+
+        const achieved = JSON.parse(localStorage.getItem('kaoyan_achievements') || '{}');
+        let newAchievement = null;
+
+        for (const m of milestones) {
+            if (achieved[m.key]) continue;
+            const current = m.type === 'streak' ? streak : m.type === 'total' ? totalDays : Math.floor(stats.totalDuration / 60);
+            if (current >= m.value) {
+                achieved[m.key] = new Date().toISOString();
+                newAchievement = m;
+                break; // 只弹出最新的一个
+            }
+        }
+
+        localStorage.setItem('kaoyan_achievements', JSON.stringify(achieved));
+
+        if (newAchievement) {
+            setTimeout(() => this.showAchievementModal(newAchievement), 600);
+        }
+    }
+
+    showAchievementModal(achievement) {
+        const modal = document.getElementById('achievement-modal');
+        if (!modal) return;
+        document.getElementById('achievement-title').textContent = achievement.title;
+        document.getElementById('achievement-desc').textContent = achievement.desc;
+        document.getElementById('achievement-badge-icon').innerHTML = `<i class="fas ${achievement.icon}"></i>`;
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+    }
+
+    hideAchievementModal() {
+        const modal = document.getElementById('achievement-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+    }
+
+    // ===================== 每周周报 =====================
+    checkWeeklyReport() {
+        const lastReport = localStorage.getItem('kaoyan_last_weekly_report');
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0=周日
+
+        // 每周一自动弹出上周周报
+        if (lastReport) {
+            const lastDate = new Date(lastReport);
+            const daysSince = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+            if (daysSince < 7) return;
+        }
+
+        // 如果今天是周一，或者距离上次周报超过7天，显示周报
+        if (dayOfWeek === 1 || !lastReport) {
+            const report = this.generateWeeklyReport();
+            if (report.totalMinutes > 0) {
+                setTimeout(() => this.showWeeklyModal(report), 1500);
+                localStorage.setItem('kaoyan_last_weekly_report', today.toISOString());
+            }
+        }
+    }
+
+    generateWeeklyReport() {
+        const data = this.storage.getData();
+        const records = data.records;
+        const today = new Date();
+        const lastWeekStart = new Date(today);
+        lastWeekStart.setDate(today.getDate() - (today.getDay() === 0 ? 7 : today.getDay()) - 6);
+        lastWeekStart.setHours(0, 0, 0, 0);
+
+        const weekBefore = new Date(lastWeekStart);
+        weekBefore.setDate(weekBefore.getDate() - 7);
+
+        // 本周数据
+        let weekMinutes = 0, weekDays = 0, weekRecords = 0;
+        const weekSubjects = {};
+        const weekMoods = { '高效': 0, '一般': 0, '疲惫': 0 };
+
+        // 上周数据
+        let lastWeekMinutes = 0;
+
+        Object.entries(records).forEach(([dateKey, recs]) => {
+            const d = new Date(dateKey);
+            if (d >= lastWeekStart && d <= today) {
+                const dayTotal = recs.reduce((s, r) => s + r.duration, 0);
+                if (dayTotal > 0) weekDays++;
+                weekMinutes += dayTotal;
+                weekRecords += recs.length;
+                recs.forEach(r => {
+                    weekSubjects[r.subject] = (weekSubjects[r.subject] || 0) + r.duration;
+                    if (weekMoods[r.mood] !== undefined) weekMoods[r.mood]++;
+                });
+            }
+            if (d >= weekBefore && d < lastWeekStart) {
+                lastWeekMinutes += recs.reduce((s, r) => s + r.duration, 0);
+            }
+        });
+
+        const change = lastWeekMinutes > 0
+            ? Math.round((weekMinutes - lastWeekMinutes) / lastWeekMinutes * 100)
+            : (weekMinutes > 0 ? 100 : 0);
+
+        const topSubject = Object.entries(weekSubjects).sort((a, b) => b[1] - a[1])[0];
+
+        return { weekMinutes, weekDays, weekRecords, weekSubjects, weekMoods, change, topSubject, lastWeekMinutes };
+    }
+
+    showWeeklyModal(report) {
+        const modal = document.getElementById('weekly-modal');
+        const content = document.getElementById('weekly-report-content');
+        if (!modal || !content) return;
+
+        const hours = Math.floor(report.weekMinutes / 60);
+        const mins = report.weekMinutes % 60;
+        const changeText = report.change > 0
+            ? `📈 比上周多 ${report.change}%`
+            : report.change < 0
+                ? `📉 比上周少 ${Math.abs(report.change)}%`
+                : report.lastWeekMinutes > 0 ? '➡️ 和上周持平' : '';
+
+        const topSubjectText = report.topSubject
+            ? `📚 最多的科目：<strong>${report.topSubject[0]}</strong>（${report.topSubject[1]}分钟）`
+            : '';
+
+        const avgMins = report.weekDays > 0 ? Math.round(report.weekMinutes / report.weekDays) : 0;
+
+        content.innerHTML = `
+            <div class="weekly-summary">
+                <div class="weekly-big-number">${hours}<span class="weekly-unit">小时</span>${mins > 0 ? mins + '<span class="weekly-unit">分钟</span>' : ''}</div>
+                <div class="weekly-subtitle">本周总学习时长</div>
+                <div class="weekly-change ${report.change >= 0 ? 'weekly-up' : 'weekly-down'}">${changeText}</div>
+            </div>
+            <div class="weekly-details">
+                <div class="weekly-detail-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>打卡天数：<strong>${report.weekDays}</strong> 天</span>
+                </div>
+                <div class="weekly-detail-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>打卡次数：<strong>${report.weekRecords}</strong> 次</span>
+                </div>
+                <div class="weekly-detail-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>日均学习：<strong>${avgMins}</strong> 分钟</span>
+                </div>
+                ${topSubjectText ? `<div class="weekly-detail-item">${topSubjectText}</div>` : ''}
+            </div>
+            <div class="weekly-mood-summary">
+                <div class="weekly-mood-label">学习状态分布</div>
+                <div class="weekly-mood-bars">
+                    <div class="weekly-mood-item">
+                        <span>😊 高效</span>
+                        <div class="weekly-mood-bar"><div style="width:${report.weekMoods['高效'] ? Math.max(15, report.weekMoods['高效'] / report.weekRecords * 100) : 5}%; background:rgba(142,175,138,0.6)"></div></div>
+                        <span>${report.weekMoods['高效']}次</span>
+                    </div>
+                    <div class="weekly-mood-item">
+                        <span>😐 一般</span>
+                        <div class="weekly-mood-bar"><div style="width:${report.weekMoods['一般'] ? Math.max(15, report.weekMoods['一般'] / report.weekRecords * 100) : 5}%; background:rgba(123,155,166,0.6)"></div></div>
+                        <span>${report.weekMoods['一般']}次</span>
+                    </div>
+                    <div class="weekly-mood-item">
+                        <span>😫 疲惫</span>
+                        <div class="weekly-mood-bar"><div style="width:${report.weekMoods['疲惫'] ? Math.max(15, report.weekMoods['疲惫'] / report.weekRecords * 100) : 5}%; background:rgba(200,149,106,0.6)"></div></div>
+                        <span>${report.weekMoods['疲惫']}次</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+    }
+
+    hideWeeklyModal() {
+        const modal = document.getElementById('weekly-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+    }
+
+    // ===================== 历史记录页 =====================
+    renderHistoryPage() {
+        const container = document.getElementById('history-page-content');
+        if (!container) return;
+
+        const data = this.storage.getData();
+        const records = data.records;
+        const dateKeys = Object.keys(records).sort().reverse();
+
+        if (dateKeys.length === 0) {
+            container.innerHTML = `
+                <div class="history-empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>还没有任何打卡记录</p>
+                    <p class="history-empty-hint">快去首页开始你的第一次打卡吧！</p>
+                </div>`;
+            return;
+        }
+
+        // 按月分组
+        const monthGroups = {};
+        dateKeys.forEach(dateKey => {
+            const recs = records[dateKey];
+            if (!recs || recs.length === 0) return;
+            const d = new Date(dateKey);
+            const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            if (!monthGroups[monthKey]) monthGroups[monthKey] = [];
+            monthGroups[monthKey].push({ dateKey, recs });
+        });
+
+        let html = '';
+        const now = new Date();
+        const todayStr = this.storage.getTodayDate();
+        const yesterdayStr = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
+
+        Object.entries(monthGroups).forEach(([monthKey, days], mIdx) => {
+            const [y, m] = monthKey.split('-');
+            const monthLabel = `${y}年${parseInt(m)}月`;
+            const isCollapsed = mIdx > 0; // 第一个月展开，其余折叠
+
+            html += `
+                <div class="history-month-group ${isCollapsed ? 'collapsed' : ''}">
+                    <div class="history-month-header" onclick="app.toggleMonthGroup(this)">
+                        <i class="fas fa-chevron-down history-month-arrow"></i>
+                        <span class="history-month-title">${monthLabel}</span>
+                        <span class="history-month-count">${days.length} 天有记录</span>
+                    </div>
+                    <div class="history-month-body">`;
+
+            days.forEach(({ dateKey, recs }) => {
+                const d = new Date(dateKey);
+                const dayTotal = recs.reduce((s, r) => s + r.duration, 0);
+                let dateLabel = `${d.getMonth() + 1}月${d.getDate()}日`;
+                if (dateKey === todayStr) dateLabel += ' (今天)';
+                else if (dateKey === yesterdayStr) dateLabel += ' (昨天)';
+                const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                dateLabel += ` ${weekDays[d.getDay()]}`;
+
+                html += `
+                    <div class="history-day-block">
+                        <div class="history-day-header" onclick="app.toggleDayBlock(this)">
+                            <div class="history-day-info">
+                                <i class="fas fa-calendar-day"></i>
+                                <span>${dateLabel}</span>
+                                <span class="history-day-summary">${recs.length}次打卡 · ${dayTotal}分钟</span>
+                            </div>
+                            <i class="fas fa-chevron-down history-day-arrow"></i>
+                        </div>
+                        <div class="history-day-body">
+                            <div class="history-records-list">
+                                ${recs.map(r => {
+                                    const moodClass = { '高效': 'efficient', '一般': 'normal', '疲惫': 'tired' }[r.mood] || 'normal';
+                                    return `
+                                        <div class="history-record-item">
+                                            <span class="history-record-time">${this.storage.formatTime(r.timestamp)}</span>
+                                            <span class="history-record-subject">${r.subject}</span>
+                                            <span class="history-record-duration">${r.duration}分钟</span>
+                                            <span class="status-badge status-${moodClass}">${r.mood}</span>
+                                            <span class="history-record-content">${r.content}</span>
+                                        </div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            html += `</div></div>`;
+        });
+
+        container.innerHTML = html;
+    }
+
+    toggleMonthGroup(header) {
+        const group = header.closest('.history-month-group');
+        group.classList.toggle('collapsed');
+    }
+
+    toggleDayBlock(header) {
+        const block = header.closest('.history-day-block');
+        block.classList.toggle('collapsed');
+    }
+
+    // ===================== 离线提醒 =====================
+    initReminder() {
+        const toggle = document.getElementById('reminder-toggle');
+        const timeInput = document.getElementById('reminder-time');
+        const enabled = localStorage.getItem('kaoyan_reminder_enabled') === 'true';
+        const savedTime = localStorage.getItem('kaoyan_reminder_time') || '08:00';
+
+        if (toggle) toggle.checked = enabled;
+        if (timeInput) timeInput.value = savedTime;
+
+        if (enabled) {
+            this.startReminderTimer(savedTime);
+        }
+    }
+
+    toggleReminder(enabled) {
+        localStorage.setItem('kaoyan_reminder_enabled', enabled);
+
+        if (enabled) {
+            // 请求通知权限
+            if ('Notification' in window) {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        this.startReminderTimer(document.getElementById('reminder-time').value);
+                        this.showToast('🔔 提醒已开启', 'success');
+                    } else {
+                        this.showToast('请允许浏览器通知权限', 'error');
+                        document.getElementById('reminder-toggle').checked = false;
+                        localStorage.setItem('kaoyan_reminder_enabled', 'false');
+                    }
+                });
+            } else {
+                this.showToast('您的浏览器不支持通知功能', 'error');
+                document.getElementById('reminder-toggle').checked = false;
+                localStorage.setItem('kaoyan_reminder_enabled', 'false');
+            }
+        } else {
+            if (this.reminderTimer) {
+                clearInterval(this.reminderTimer);
+                this.reminderTimer = null;
+            }
+            this.showToast('提醒已关闭', 'info');
+        }
+    }
+
+    startReminderTimer(timeStr) {
+        if (this.reminderTimer) clearInterval(this.reminderTimer);
+
+        const [h, m] = timeStr.split(':').map(Number);
+        const lastReminded = localStorage.getItem('kaoyan_last_reminded_date') || '';
+
+        this.reminderTimer = setInterval(() => {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+
+            // 每天只提醒一次
+            if (lastReminded === today) return;
+
+            // 在目标时间前后1分钟内触发
+            if (now.getHours() === h && Math.abs(now.getMinutes() - m) <= 1) {
+                // 检查今天是否已打卡
+                const todayRecords = this.storage.getTodayRecords();
+                if (todayRecords.length > 0) return; // 今天已打卡不提醒
+
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    const streak = this.storage.getStats().streakDays;
+                    new Notification('考研打卡提醒', {
+                        body: streak > 0
+                            ? `你已经连续打卡${streak}天了，今天继续加油！💪`
+                            : '新的一天开始了，开始今天的学习吧！📚',
+                        icon: '/icons/icon-192x192.png',
+                        tag: 'kaoyan-reminder',
+                        requireInteraction: false,
+                    });
+                }
+                localStorage.setItem('kaoyan_last_reminded_date', today);
+            }
+        }, 30000); // 每30秒检查一次
     }
 }
 

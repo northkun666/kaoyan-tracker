@@ -278,11 +278,27 @@
             </div>
         </div>
 
+        <!-- 历史记录页面（默认隐藏） -->
+        <div id="history-page" class="page hidden">
+            <div class="page-header">
+                <button class="back-btn" data-page="home">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+                <h2><i class="fas fa-history"></i> 历史记录</h2>
+            </div>
+            <div class="history-page-container" id="history-page-content">
+                <!-- 动态生成按月分组的历史记录 -->
+            </div>
+        </div>
+
         <!-- 底部导航 -->
         <footer class="footer">
             <div class="nav-buttons">
                 <button class="nav-btn active" data-page="home">
                     <i class="fas fa-home"></i> 打卡
+                </button>
+                <button class="nav-btn" data-page="history">
+                    <i class="fas fa-history"></i> 记录
                 </button>
                 <button class="nav-btn" data-page="stats">
                     <i class="fas fa-chart-bar"></i> 统计
@@ -321,6 +337,32 @@
                 <button id="save-goal" class="btn-primary">保存目标</button>
                 <button id="close-goal" class="btn-secondary">稍后设置</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 成就徽章弹窗 -->
+    <div id="achievement-modal" class="modal">
+        <div class="modal-content achievement-modal-content">
+            <div class="achievement-badge" id="achievement-badge-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h2 id="achievement-title">恭喜达成成就！</h2>
+            <p class="achievement-desc" id="achievement-desc"></p>
+            <div class="achievement-stars" id="achievement-stars"></div>
+            <button class="btn-primary" id="close-achievement" style="margin-top:16px">
+                <i class="fas fa-thumbs-up"></i> 太棒了！
+            </button>
+        </div>
+    </div>
+
+    <!-- 周报弹窗 -->
+    <div id="weekly-modal" class="modal">
+        <div class="modal-content weekly-modal-content">
+            <h2><i class="fas fa-newspaper"></i> 本周学习周报</h2>
+            <div id="weekly-report-content"></div>
+            <button class="btn-primary" id="close-weekly" style="margin-top:16px">
+                <i class="fas fa-check"></i> 收到
+            </button>
         </div>
     </div>
 

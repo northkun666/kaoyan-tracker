@@ -726,17 +726,17 @@ select.form-control {
 
 .nav-buttons {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
 }
 
 .nav-btn {
     background: transparent;
     border: 1px solid transparent;
     border-radius: var(--radius-md);
-    padding: 11px 8px;
+    padding: 11px 6px;
     color: var(--color-text-muted);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     cursor: pointer;
     transition: all var(--transition-fast);
     display: flex;
@@ -760,7 +760,7 @@ select.form-control {
     box-shadow: 0 2px 10px rgba(0,0,0,0.12), var(--shadow-glow);
 }
 
-.nav-btn i { font-size: 1.1rem; }
+.nav-btn i { font-size: 1rem; }
 
 /* ===== 模态框 ===== */
 .modal {
@@ -1261,7 +1261,378 @@ input:checked + .slider:before {
 /* ===== 工具类 ===== */
 .hidden { display: none !important; }
 
-/* ===== 响应式 ===== */
+/* ===== 成就弹窗 ===== */
+.achievement-modal-content {
+    text-align: center;
+    padding: 36px 32px;
+}
+
+.achievement-badge {
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #F0C040 0%, #E89820 50%, #D07818 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(224, 152, 32, 0.35), 0 0 40px rgba(240, 192, 64, 0.2);
+    animation: badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+    0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+    60%  { transform: scale(1.15) rotate(5deg); }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.achievement-modal-content h2 {
+    justify-content: center;
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 8px;
+    font-size: 1.4rem;
+}
+
+.achievement-desc {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.achievement-stars {
+    color: #F0C040;
+    font-size: 1.4rem;
+    letter-spacing: 4px;
+}
+
+/* ===== 周报弹窗 ===== */
+.weekly-modal-content {
+    max-width: 520px;
+    padding: 32px;
+}
+
+.weekly-modal-content h2 {
+    justify-content: center;
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 20px;
+}
+
+.weekly-summary {
+    text-align: center;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+}
+
+.weekly-big-number {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    letter-spacing: -1px;
+    line-height: 1.2;
+}
+
+.weekly-unit {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    margin-left: 4px;
+}
+
+.weekly-subtitle {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-top: 6px;
+}
+
+.weekly-change {
+    margin-top: 8px;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.weekly-up { color: #4A8050; }
+.weekly-down { color: #C86830; }
+
+.weekly-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.weekly-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    font-size: 0.92rem;
+    color: var(--color-text-secondary);
+}
+
+.weekly-detail-item i {
+    color: var(--color-primary);
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.weekly-detail-item strong {
+    color: var(--color-text-primary);
+}
+
+.weekly-mood-summary {
+    padding: 16px;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}
+
+.weekly-mood-label {
+    font-size: 0.88rem;
+    font-weight: 550;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
+}
+
+.weekly-mood-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+}
+
+.weekly-mood-item:last-child { margin-bottom: 0; }
+
+.weekly-mood-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.weekly-mood-bar div {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.6s ease;
+}
+
+/* ===== 历史记录页 ===== */
+.history-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 16px;
+}
+
+.history-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-muted);
+}
+
+.history-empty-state i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.4;
+    display: block;
+}
+
+.history-empty-state p {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.history-empty-hint {
+    font-size: 0.85rem !important;
+    opacity: 0.7;
+}
+
+.history-month-group {
+    background: var(--color-bg-card);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--color-border);
+    border-top-color: rgba(255,255,255,0.45);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.history-month-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--transition-fast);
+}
+
+.history-month-header:hover {
+    background: var(--color-bg-hover);
+}
+
+.history-month-arrow {
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    transition: transform var(--transition-normal);
+    flex-shrink: 0;
+}
+
+.history-month-group.collapsed .history-month-arrow {
+    transform: rotate(-90deg);
+}
+
+.history-month-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    flex: 1;
+}
+
+.history-month-count {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg-secondary);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+}
+
+.history-month-body {
+    max-height: 5000px;
+    transition: max-height 0.4s ease;
+    overflow: hidden;
+}
+
+.history-month-group.collapsed .history-month-body {
+    max-height: 0 !important;
+}
+
+/* 日期块 */
+.history-day-block {
+    border-top: 1px solid var(--color-border);
+}
+
+.history-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--transition-fast);
+}
+
+.history-day-header:hover {
+    background: var(--color-bg-hover);
+}
+
+.history-day-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    flex: 1;
+}
+
+.history-day-info i {
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.history-day-summary {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-left: auto;
+    margin-right: 4px;
+}
+
+.history-day-arrow {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    transition: transform var(--transition-normal);
+    flex-shrink: 0;
+}
+
+.history-day-block.collapsed .history-day-arrow {
+    transform: rotate(-90deg);
+}
+
+.history-day-body {
+    max-height: 2000px;
+    padding: 0 20px 14px;
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+}
+
+.history-day-block.collapsed .history-day-body {
+    max-height: 0 !important;
+    padding-bottom: 0;
+}
+
+/* 记录列表 */
+.history-records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-record-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.history-record-time {
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    flex-shrink: 0;
+    min-width: 42px;
+}
+
+.history-record-subject {
+    color: var(--color-primary);
+    font-weight: 550;
+    flex-shrink: 0;
+}
+
+.history-record-duration {
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+}
+
+.history-record-content {
+    color: var(--color-text-secondary);
+    flex: 1;
+    min-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ===== 响应式适配 ===== */
 @media (max-width: 768px) {
     .container { padding: 10px; }
 
@@ -1291,13 +1662,6 @@ input:checked + .slider:before {
 
     .footer { padding: 8px; border-radius: var(--radius-lg); }
 
-    .nav-btn {
-        padding: 9px 6px;
-        font-size: 0.78rem;
-    }
-
-    .nav-btn i { font-size: 1rem; }
-
     .modal-content { padding: 24px 18px; }
 
     .stats-container {
@@ -1316,6 +1680,20 @@ input:checked + .slider:before {
         padding: 14px 16px;
         margin-bottom: 16px;
     }
+
+    /* 历史记录、周报、成就弹窗响应式 */
+    .history-record-item {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .history-record-content {
+        width: 100%;
+        min-width: 0;
+    }
+    .weekly-modal-content { padding: 24px 18px; }
+    .weekly-big-number { font-size: 2.2rem; }
+    .achievement-modal-content { padding: 28px 20px; }
+    .achievement-badge { width: 76px; height: 76px; font-size: 1.8rem; }
 }
 
 @media (max-width: 480px) {
@@ -1324,4 +1702,10 @@ input:checked + .slider:before {
     .modal-buttons { flex-direction: column; }
     .theme-selector { flex-direction: column; }
     .stats-overview { grid-template-columns: repeat(2, 1fr); }
+
+    /* 历史记录小屏适配 */
+    .history-record-item {
+        font-size: 0.82rem;
+        padding: 8px 12px;
+    }
 }
