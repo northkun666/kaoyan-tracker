@@ -274,10 +274,24 @@ class KaoyanApp {
         if (!container) return;
         const cards = container.querySelectorAll('.card, .chart-card, .setting-item, .overview-item, .history-month-group, .news-item');
         cards.forEach((card, i) => {
+            // 先确保元素可见（防止之前的 opacity:0 残留）
+            card.style.opacity = '';
             card.classList.remove('card-stagger');
-            void card.offsetWidth;
-            card.classList.add('card-stagger');
-            card.addEventListener('animationend', () => card.classList.remove('card-stagger'), { once: true });
+
+            // 短暂延迟后加动效（确保 display 已经生效）
+            setTimeout(() => {
+                void card.offsetWidth;
+                card.style.animationDelay = `${i * 0.055}s`;
+                card.classList.add('card-stagger');
+                const cleanup = () => {
+                    card.classList.remove('card-stagger');
+                    card.style.animationDelay = '';
+                    card.style.opacity = '';
+                };
+                card.addEventListener('animationend', cleanup, { once: true });
+                // 双保险：600ms后强制恢复
+                setTimeout(cleanup, 600 + i * 60);
+            }, 20);
         });
     }
 
@@ -1096,19 +1110,27 @@ class KaoyanApp {
 
     // 初始化通用动效
     initAnimations() {
-        // 首页卡片入场
-        const main = document.querySelector('.main-content');
-        if (main) {
-            const cards = main.querySelectorAll('.card');
-            cards.forEach((card, i) => {
-                card.style.animationDelay = `${i * 0.08}s`;
-                card.classList.add('card-stagger');
-                card.addEventListener('animationend', () => {
+        // 首页卡片入场（延迟确保 DOM 渲染完成）
+        setTimeout(() => {
+            const main = document.querySelector('.main-content');
+            if (main) {
+                const cards = main.querySelectorAll('.card');
+                cards.forEach((card, i) => {
+                    card.style.opacity = '';
                     card.classList.remove('card-stagger');
-                    card.style.animationDelay = '';
-                }, { once: true });
-            });
-        }
+                    void card.offsetWidth;
+                    card.style.animationDelay = `${i * 0.08}s`;
+                    card.classList.add('card-stagger');
+                    const cleanup = () => {
+                        card.classList.remove('card-stagger');
+                        card.style.animationDelay = '';
+                        card.style.opacity = '';
+                    };
+                    card.addEventListener('animationend', cleanup, { once: true });
+                    setTimeout(cleanup, 900 + i * 80);
+                });
+            }
+        }, 50);
 
         // 打卡按钮心跳待命
         const punchBtn = document.getElementById('punch-btn');
@@ -1127,6 +1149,13 @@ class KaoyanApp {
         const container = document.getElementById('bg-particles');
         if (!container) return;
 
+        // 从 body 的 computedStyle 读取当前主题色（避免 fixed 定位脱离主题上下文）
+        const style = getComputedStyle(document.body);
+        const c1 = style.getPropertyValue('--color-primary').trim() || '#7B9BA6';
+        const c2 = style.getPropertyValue('--color-secondary').trim() || '#9E8A7A';
+        const c3 = style.getPropertyValue('--color-accent').trim() || '#7E9E8A';
+        const colors = [c1, c2, c3];
+
         const count = 18;
         for (let i = 0; i < count; i++) {
             const dot = document.createElement('div');
@@ -1136,6 +1165,7 @@ class KaoyanApp {
                 width: ${size}px;
                 height: ${size}px;
                 left: ${Math.random() * 100}vw;
+                background: ${colors[i % colors.length]};
                 animation-duration: ${Math.random() * 18 + 14}s;
                 animation-delay: ${Math.random() * -25}s;
             `;

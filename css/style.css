@@ -1320,10 +1320,12 @@ input:checked + .slider:before {
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.page.entering-right { animation: pageEnterRight 0.38s cubic-bezier(0.34, 1.2, 0.64, 1) forwards; }
-.page.entering-left  { animation: pageEnterLeft  0.38s cubic-bezier(0.34, 1.2, 0.64, 1) forwards; }
-.page.entering-up    { animation: pageEnterUp    0.35s cubic-bezier(0.34, 1.1, 0.64, 1) forwards; }
-.main-content.entering-up { animation: pageEnterUp 0.35s cubic-bezier(0.34, 1.1, 0.64, 1) forwards; }
+.page.entering-right,
+.main-content.entering-right { animation: pageEnterRight 0.38s cubic-bezier(0.34, 1.2, 0.64, 1) forwards; }
+.page.entering-left,
+.main-content.entering-left  { animation: pageEnterLeft  0.38s cubic-bezier(0.34, 1.2, 0.64, 1) forwards; }
+.page.entering-up,
+.main-content.entering-up    { animation: pageEnterUp    0.35s cubic-bezier(0.34, 1.1, 0.64, 1) forwards; }
 
 /* —— 卡片交错入场动效 —— */
 @keyframes cardStagger {
@@ -1335,14 +1337,7 @@ input:checked + .slider:before {
     opacity: 0;
     animation: cardStagger 0.4s cubic-bezier(0.34, 1.15, 0.64, 1) forwards;
 }
-.card-stagger:nth-child(1) { animation-delay: 0.04s; }
-.card-stagger:nth-child(2) { animation-delay: 0.10s; }
-.card-stagger:nth-child(3) { animation-delay: 0.16s; }
-.card-stagger:nth-child(4) { animation-delay: 0.22s; }
-.card-stagger:nth-child(5) { animation-delay: 0.28s; }
-.card-stagger:nth-child(6) { animation-delay: 0.34s; }
-.card-stagger:nth-child(7) { animation-delay: 0.40s; }
-.card-stagger:nth-child(8) { animation-delay: 0.46s; }
+/* 不用 nth-child，由 JS 通过 style.animationDelay 设置，避免选择器失配导致白屏 */
 
 /* —— 按钮 Ripple 波纹 —— */
 .ripple-host {
@@ -1449,7 +1444,7 @@ input:checked + .slider:before {
     transform: translateX(-50%) scaleX(0);
     width: 20px;
     height: 3px;
-    background: var(--color-text-light);
+    background: rgba(255,255,255,0.85);
     border-radius: 2px;
     transition: transform 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
@@ -1498,27 +1493,10 @@ body {
 
 /* Toast 弹出时使用 animation 覆盖 */
 
-/* —— 主题切换背景光晕动效 —— */
+/* —— 主题切换背景光晕动效（body::before/after 已用 var() 自动跟随主题） —— */
 body::before,
 body::after {
     transition: background 0.8s ease, transform 0.8s ease;
-}
-
-/* —— 马卡龙主题背景光晕特别设定 —— */
-[data-theme="macaron"] body::before,
-[data-theme="macaron"] .bg-particles .bg-particle:nth-child(odd) {
-    background: #F4A7B9;
-}
-[data-theme="macaron"] body::after {
-    background: #9ECFCA;
-}
-
-/* —— 极光主题背景光晕 —— */
-[data-theme="aurora"] body::before {
-    background: #7C9EF8;
-}
-[data-theme="aurora"] body::after {
-    background: #9B84E8;
 }
 
 /* —— 极光主题渐变主按钮 —— */
