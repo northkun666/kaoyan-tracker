@@ -41,6 +41,30 @@ self.addEventListener('activate', event => {
 
 // 拦截请求
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // news.json 使用 Network First 策略，确保每次获取最新数据
+  if (url.pathname.endsWith('/data/news.json')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response && response.status === 200) {
+            // 网络成功：更新缓存并返回最新数据
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+            return response;
+          }
+          // 网络失败但有缓存，则回退到缓存
+          return caches.match(event.request);
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // 其他资源：Cache First 策略
   event.respondWith(
     caches.match(event.request)
       .then(response => {
