@@ -29,6 +29,10 @@ class KaoyanApp {
         this.initAchievements();
         this.initReminder();
         this.checkWeeklyReport();
+        // 高级动效初始化
+        this.initAnimations();
+        this.initBgParticles();
+        this.initRipple();
     }
 
     // ===================== 资讯数据路径 =====================
@@ -95,13 +99,14 @@ class KaoyanApp {
         document.getElementById('import-btn')?.addEventListener('click', () => this.importData());
         document.getElementById('clear-btn')?.addEventListener('click', () => this.clearData());
 
-        // 主题切换按钮（5套主题）
+        // 主题切换按钮（7套主题）
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 const theme = btn.dataset.theme;
-                document.body.dataset.theme = theme;
+                // 平滑主题切换：先加淡出遮罩
+                this.smoothThemeSwitch(theme);
                 localStorage.setItem('kaoyan_theme', theme);
             });
         });
@@ -169,6 +174,9 @@ class KaoyanApp {
         this.updateUI();
         contentInput.focus();
 
+        // 🎉 彩纸爆炸效果
+        this.launchConfetti();
+
         // 检查成就
         this.checkAchievements();
     }
@@ -177,8 +185,9 @@ class KaoyanApp {
         const btn = event.target.closest('.mood-btn');
         if (!btn) return;
         this.currentMood = btn.dataset.mood;
-        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active', 'just-selected'));
+        btn.classList.add('active', 'just-selected');
+        btn.addEventListener('animationend', () => btn.classList.remove('just-selected'), { once: true });
     }
 
     // ===================== 导航 =====================
@@ -190,6 +199,13 @@ class KaoyanApp {
     }
 
     showPage(page) {
+        // 页面顺序（用于方向感知）
+        const pageOrder = ['home', 'history', 'news', 'stats', 'settings'];
+        const currentActive = document.querySelector('.nav-btn.active')?.dataset.page || 'home';
+        const fromIdx = pageOrder.indexOf(currentActive);
+        const toIdx = pageOrder.indexOf(page);
+        const direction = toIdx > fromIdx ? 'right' : toIdx < fromIdx ? 'left' : 'up';
+
         // 更新导航高亮
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.querySelector(`.nav-btn[data-page="${page}"]`)?.classList.add('active');
@@ -207,29 +223,62 @@ class KaoyanApp {
         historyPage?.classList.add('hidden');
         newsPage?.classList.add('hidden');
 
+        // 移除旧的入场类
+        const removeEnterClasses = (el) => {
+            if (!el) return;
+            el.classList.remove('entering-right', 'entering-left', 'entering-up');
+        };
+
+        const applyEnter = (el) => {
+            removeEnterClasses(el);
+            el?.classList.remove('hidden');
+            // 强制 reflow 再添加类
+            void el?.offsetWidth;
+            el?.classList.add(`entering-${direction}`);
+            // 动画结束后自动移除类
+            el?.addEventListener('animationend', () => {
+                el.classList.remove('entering-right', 'entering-left', 'entering-up');
+            }, { once: true });
+        };
+
         switch (page) {
             case 'home':
-                main?.classList.remove('hidden');
+                applyEnter(main);
                 this.updateUI();
                 break;
             case 'history':
-                historyPage?.classList.remove('hidden');
+                applyEnter(historyPage);
                 this.renderHistoryPage();
+                this.addCardStagger(historyPage);
                 break;
             case 'news':
-                newsPage?.classList.remove('hidden');
+                applyEnter(newsPage);
                 this.loadNewsData();
                 break;
             case 'stats':
-                statsPage?.classList.remove('hidden');
+                applyEnter(statsPage);
                 this.updateStatsTodayRecords();
+                this.addCardStagger(statsPage);
                 setTimeout(() => window.kaoyanCharts?.updateAllCharts(), 150);
                 break;
             case 'settings':
-                settingsPage?.classList.remove('hidden');
+                applyEnter(settingsPage);
                 this.updateGoalDisplay();
+                this.addCardStagger(settingsPage);
                 break;
         }
+    }
+
+    // 为页面内的卡片添加交错入场
+    addCardStagger(container) {
+        if (!container) return;
+        const cards = container.querySelectorAll('.card, .chart-card, .setting-item, .overview-item, .history-month-group, .news-item');
+        cards.forEach((card, i) => {
+            card.classList.remove('card-stagger');
+            void card.offsetWidth;
+            card.classList.add('card-stagger');
+            card.addEventListener('animationend', () => card.classList.remove('card-stagger'), { once: true });
+        });
     }
 
     // ===================== UI 更新 =====================
@@ -340,6 +389,18 @@ class KaoyanApp {
         this.countdownTimer = setInterval(() => this.updateCountdownDisplay(), 60000);
     }
 
+    // 带动效的倒计时数字更新
+    _setCountdownVal(el, val) {
+        if (!el) return;
+        const newVal = String(val);
+        if (el.textContent === newVal) return;
+        el.textContent = newVal;
+        el.classList.remove('countdown-flip');
+        void el.offsetWidth;
+        el.classList.add('countdown-flip');
+        el.addEventListener('animationend', () => el.classList.remove('countdown-flip'), { once: true });
+    }
+
     updateCountdownDisplay() {
         const goal = this.storage.getGoal();
         const daysEl = document.getElementById('countdown-days');
@@ -348,9 +409,9 @@ class KaoyanApp {
         const infoEl = document.getElementById('goal-info');
 
         if (!goal.examDate) {
-            if (daysEl) daysEl.textContent = '--';
-            if (hoursEl) hoursEl.textContent = '--';
-            if (minutesEl) minutesEl.textContent = '--';
+            this._setCountdownVal(daysEl, '--');
+            this._setCountdownVal(hoursEl, '--');
+            this._setCountdownVal(minutesEl, '--');
             if (infoEl) {
                 infoEl.textContent = '未设置考研目标，请在「设置」页面设置';
                 infoEl.classList.remove('has-goal');
@@ -360,14 +421,14 @@ class KaoyanApp {
 
         const now = new Date();
         const exam = new Date(goal.examDate);
-        exam.setHours(9, 0, 0, 0); // 考研一般9点开始
+        exam.setHours(9, 0, 0, 0);
 
         const diff = exam - now;
 
         if (diff <= 0) {
-            if (daysEl) daysEl.textContent = '0';
-            if (hoursEl) hoursEl.textContent = '0';
-            if (minutesEl) minutesEl.textContent = '0';
+            this._setCountdownVal(daysEl, '0');
+            this._setCountdownVal(hoursEl, '0');
+            this._setCountdownVal(minutesEl, '0');
             if (infoEl) {
                 infoEl.innerHTML = '<span class="goal-achieved">🎉 考研已经结束，祝你旗开得胜！</span>';
                 infoEl.classList.add('has-goal');
@@ -381,15 +442,15 @@ class KaoyanApp {
         const minutes = totalMinutes % 60;
 
         if (daysEl) {
-            daysEl.textContent = days;
+            this._setCountdownVal(daysEl, days);
             daysEl.classList.toggle('urgent', days <= 7);
         }
         if (hoursEl) {
-            hoursEl.textContent = hours;
+            this._setCountdownVal(hoursEl, hours);
             hoursEl.classList.toggle('urgent', days <= 7);
         }
         if (minutesEl) {
-            minutesEl.textContent = minutes;
+            this._setCountdownVal(minutesEl, minutes);
             minutesEl.classList.toggle('urgent', days <= 7);
         }
 
@@ -504,14 +565,20 @@ class KaoyanApp {
         toast.textContent = message;
         document.body.appendChild(toast);
 
-        // 触发动画
+        // 触发弹跳入场动画
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => toast.classList.add('toast-visible'));
+            requestAnimationFrame(() => {
+                toast.style.animation = 'toastBounce 0.42s cubic-bezier(0.34, 1.2, 0.64, 1) forwards';
+                toast.classList.add('toast-visible');
+            });
         });
 
         setTimeout(() => {
-            toast.classList.remove('toast-visible');
-            setTimeout(() => toast.remove(), 400);
+            toast.style.animation = '';
+            toast.style.transition = 'opacity 0.28s ease, transform 0.28s ease';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(-12px) scale(0.92)';
+            setTimeout(() => toast.remove(), 350);
         }, 2500);
     }
 
@@ -1023,6 +1090,135 @@ class KaoyanApp {
         });
 
         container.innerHTML = html;
+    }
+
+    // ===================== 高级动效系统 =====================
+
+    // 初始化通用动效
+    initAnimations() {
+        // 首页卡片入场
+        const main = document.querySelector('.main-content');
+        if (main) {
+            const cards = main.querySelectorAll('.card');
+            cards.forEach((card, i) => {
+                card.style.animationDelay = `${i * 0.08}s`;
+                card.classList.add('card-stagger');
+                card.addEventListener('animationend', () => {
+                    card.classList.remove('card-stagger');
+                    card.style.animationDelay = '';
+                }, { once: true });
+            });
+        }
+
+        // 打卡按钮心跳待命
+        const punchBtn = document.getElementById('punch-btn');
+        if (punchBtn) {
+            punchBtn.classList.add('ripple-host', 'ready-pulse');
+        }
+
+        // 所有主按钮加 ripple
+        document.querySelectorAll('.btn-primary, .btn-secondary, .mood-btn, .nav-btn, .theme-btn').forEach(btn => {
+            btn.classList.add('ripple-host');
+        });
+    }
+
+    // 背景浮动粒子
+    initBgParticles() {
+        const container = document.getElementById('bg-particles');
+        if (!container) return;
+
+        const count = 18;
+        for (let i = 0; i < count; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'bg-particle';
+            const size = Math.random() * 40 + 10;
+            dot.style.cssText = `
+                width: ${size}px;
+                height: ${size}px;
+                left: ${Math.random() * 100}vw;
+                animation-duration: ${Math.random() * 18 + 14}s;
+                animation-delay: ${Math.random() * -25}s;
+            `;
+            container.appendChild(dot);
+        }
+    }
+
+    // 全局 Ripple 波纹
+    initRipple() {
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.ripple-host');
+            if (!btn) return;
+
+            const rect = btn.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height) * 2;
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple-circle';
+            ripple.style.cssText = `
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+            `;
+            btn.appendChild(ripple);
+            ripple.addEventListener('animationend', () => ripple.remove());
+        });
+    }
+
+    // 打卡成功彩纸爆炸
+    launchConfetti() {
+        const wrap = document.createElement('div');
+        wrap.className = 'confetti-wrap';
+        document.body.appendChild(wrap);
+
+        const colors = [
+            'var(--color-primary)', 'var(--color-secondary)', 'var(--color-accent)',
+            '#F4A7B9', '#9ECFCA', '#7C9EF8', '#F0C040', '#9B84E8'
+        ];
+
+        const punchBtn = document.getElementById('punch-btn');
+        const rect = punchBtn?.getBoundingClientRect();
+        const originX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+        const originY = rect ? rect.top : window.innerHeight * 0.5;
+
+        for (let i = 0; i < 36; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'confetti-dot';
+            const angle = (Math.random() * 360) * (Math.PI / 180);
+            const speed = Math.random() * 220 + 80;
+            const fallX = Math.cos(angle) * speed;
+            const fallY = Math.sin(angle) * speed + Math.random() * 200;
+            dot.style.cssText = `
+                left: ${originX}px;
+                top: ${originY}px;
+                background: ${colors[Math.floor(Math.random() * colors.length)]};
+                width: ${Math.random() * 8 + 4}px;
+                height: ${Math.random() * 8 + 4}px;
+                border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+                --fall-x: ${fallX}px;
+                --fall-y: ${fallY}px;
+                --spin: ${Math.random() * 720 - 360}deg;
+                animation-duration: ${Math.random() * 0.4 + 0.8}s;
+                animation-delay: ${Math.random() * 0.15}s;
+            `;
+            wrap.appendChild(dot);
+        }
+
+        setTimeout(() => wrap.remove(), 1500);
+    }
+
+    // 平滑主题切换（带涟漪扩散效果）
+    smoothThemeSwitch(theme) {
+        // 直接切换 + CSS transition 处理过渡
+        document.body.dataset.theme = theme;
+        // 重建粒子颜色
+        const container = document.getElementById('bg-particles');
+        if (container) {
+            container.innerHTML = '';
+            this.initBgParticles();
+        }
     }
 }
 

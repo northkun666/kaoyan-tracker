@@ -113,6 +113,52 @@
     --shadow-glow: 0 0 20px rgba(148, 144, 181, 0.2);
 }
 
+/* 主题：马卡龙 - 粉蓝薄荷系 */
+[data-theme="macaron"] {
+    --color-primary: #F4A7B9;
+    --color-secondary: #9ECFCA;
+    --color-accent: #A8C8E8;
+    --color-muted: #C8A8D8;
+
+    --color-bg-base: linear-gradient(135deg, #FEF0F5 0%, #EDF6F9 50%, #F0EBF8 100%);
+    --color-bg-primary: rgba(255, 243, 248, 0.78);
+    --color-bg-secondary: rgba(244, 230, 240, 0.68);
+    --color-bg-card: rgba(255, 252, 254, 0.62);
+    --color-bg-hover: rgba(250, 220, 235, 0.58);
+
+    --color-text-primary: #3D2A35;
+    --color-text-secondary: #7A4A60;
+    --color-text-muted: #B888A0;
+    --color-text-light: #FFF0F5;
+
+    --color-border: rgba(244, 167, 185, 0.22);
+    --color-border-strong: rgba(200, 120, 150, 0.32);
+    --shadow-glow: 0 0 22px rgba(244, 167, 185, 0.28);
+}
+
+/* 主题：极光 - 渐变紫蓝系 */
+[data-theme="aurora"] {
+    --color-primary: #7C9EF8;
+    --color-secondary: #9B84E8;
+    --color-accent: #5ECCE8;
+    --color-muted: #8AABF0;
+
+    --color-bg-base: linear-gradient(135deg, #EEF2FF 0%, #E8E4F8 50%, #E4F0FC 100%);
+    --color-bg-primary: rgba(238, 242, 255, 0.78);
+    --color-bg-secondary: rgba(225, 232, 255, 0.68);
+    --color-bg-card: rgba(248, 250, 255, 0.62);
+    --color-bg-hover: rgba(210, 220, 255, 0.58);
+
+    --color-text-primary: #1E2A4A;
+    --color-text-secondary: #3A4E80;
+    --color-text-muted: #7A90C0;
+    --color-text-light: #EFF2FF;
+
+    --color-border: rgba(124, 158, 248, 0.22);
+    --color-border-strong: rgba(80, 110, 220, 0.32);
+    --shadow-glow: 0 0 22px rgba(124, 158, 248, 0.28);
+}
+
 /* 深色主题 */
 [data-theme="dark"] {
     --color-primary: #7B9BA6;
@@ -823,7 +869,6 @@ select.form-control {
 
 /* ===== 页面切换 ===== */
 .page {
-    animation: fadeSlideIn var(--transition-normal);
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -1130,6 +1175,8 @@ input:checked + .slider:before {
 .swatch-sage     { background: #7E9E8A; }
 .swatch-lavender { background: #9490B5; }
 .swatch-dark     { background: #334155; }
+.swatch-macaron  { background: linear-gradient(135deg, #F4A7B9 0%, #9ECFCA 100%); }
+.swatch-aurora   { background: linear-gradient(135deg, #7C9EF8 0%, #9B84E8 100%); }
 
 /* ===== 状态徽章 ===== */
 .status-badge {
@@ -1199,7 +1246,7 @@ input:checked + .slider:before {
     position: fixed;
     top: 20px;
     left: 50%;
-    transform: translateX(-50%) translateY(-20px);
+    transform: translateX(-50%) translateY(-30px);
     padding: 12px 22px;
     border-radius: var(--radius-full);
     font-size: 0.92rem;
@@ -1207,7 +1254,7 @@ input:checked + .slider:before {
     z-index: 9999;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.28s ease, transform 0.28s ease;
+    transition: opacity 0.28s ease;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     white-space: nowrap;
@@ -1216,8 +1263,8 @@ input:checked + .slider:before {
 }
 
 .toast-visible {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    opacity: 1 !important;
+    transform: translateX(-50%) translateY(0) !important;
 }
 
 .toast-success {
@@ -1255,6 +1302,261 @@ input:checked + .slider:before {
     color: #E05050;
     background: rgba(224, 80, 80, 0.08);
     border-color: rgba(224, 80, 80, 0.35);
+}
+
+/* ===== 高级动效系统 ===== */
+
+/* —— 页面切换动效（方向感知） —— */
+@keyframes pageEnterRight {
+    from { opacity: 0; transform: translateX(28px) scale(0.98); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes pageEnterLeft {
+    from { opacity: 0; transform: translateX(-28px) scale(0.98); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes pageEnterUp {
+    from { opacity: 0; transform: translateY(24px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.page.entering-right { animation: pageEnterRight 0.38s cubic-bezier(0.34, 1.2, 0.64, 1) forwards; }
+.page.entering-left  { animation: pageEnterLeft  0.38s cubic-bezier(0.34, 1.2, 0.64, 1) forwards; }
+.page.entering-up    { animation: pageEnterUp    0.35s cubic-bezier(0.34, 1.1, 0.64, 1) forwards; }
+.main-content.entering-up { animation: pageEnterUp 0.35s cubic-bezier(0.34, 1.1, 0.64, 1) forwards; }
+
+/* —— 卡片交错入场动效 —— */
+@keyframes cardStagger {
+    from { opacity: 0; transform: translateY(18px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card-stagger {
+    opacity: 0;
+    animation: cardStagger 0.4s cubic-bezier(0.34, 1.15, 0.64, 1) forwards;
+}
+.card-stagger:nth-child(1) { animation-delay: 0.04s; }
+.card-stagger:nth-child(2) { animation-delay: 0.10s; }
+.card-stagger:nth-child(3) { animation-delay: 0.16s; }
+.card-stagger:nth-child(4) { animation-delay: 0.22s; }
+.card-stagger:nth-child(5) { animation-delay: 0.28s; }
+.card-stagger:nth-child(6) { animation-delay: 0.34s; }
+.card-stagger:nth-child(7) { animation-delay: 0.40s; }
+.card-stagger:nth-child(8) { animation-delay: 0.46s; }
+
+/* —— 按钮 Ripple 波纹 —— */
+.ripple-host {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple-circle {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: rippleAnim 0.55s linear;
+    background: rgba(255, 255, 255, 0.38);
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes rippleAnim {
+    to { transform: scale(4); opacity: 0; }
+}
+
+/* —— 倒计时数字翻牌动效 —— */
+.countdown-value {
+    transition: all var(--transition-fast);
+}
+
+.countdown-flip {
+    animation: countFlip 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes countFlip {
+    0%   { transform: translateY(-8px) scale(1.12); opacity: 0.6; }
+    60%  { transform: translateY(2px) scale(1.04); }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* —— 统计数字滚动入场 —— */
+@keyframes numRoll {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.num-roll {
+    display: inline-block;
+    animation: numRoll 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+/* —— 打卡成功粒子爆炸 —— */
+.confetti-wrap {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    overflow: hidden;
+}
+
+.confetti-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    animation: confettiFall 1.1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes confettiFall {
+    0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+    60%  { opacity: 1; }
+    100% { transform: translateY(var(--fall-y, 300px)) translateX(var(--fall-x, 0px)) rotate(var(--spin, 540deg)) scale(0.4); opacity: 0; }
+}
+
+/* —— 背景浮动粒子 —— */
+.bg-particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.bg-particle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--color-primary);
+    opacity: 0.06;
+    animation: particleFloat linear infinite;
+}
+
+@keyframes particleFloat {
+    0%   { transform: translateY(100vh) rotate(0deg) scale(1); opacity: 0; }
+    10%  { opacity: 0.06; }
+    90%  { opacity: 0.06; }
+    100% { transform: translateY(-100px) rotate(360deg) scale(0.6); opacity: 0; }
+}
+
+/* —— 导航栏 Active 指示条 —— */
+.nav-btn {
+    position: relative;
+}
+
+.nav-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 20px;
+    height: 3px;
+    background: var(--color-text-light);
+    border-radius: 2px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.nav-btn.active::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+/* —— 主题切换动效（背景色平滑过渡） —— */
+body {
+    transition: background var(--transition-slow), color var(--transition-normal),
+                --color-primary var(--transition-normal);
+}
+
+/* —— 卡片悬浮增强 —— */
+.card, .chart-card, .setting-item, .overview-item, .news-item {
+    will-change: transform, box-shadow;
+}
+
+/* —— 打卡按钮心跳待命状态 —— */
+@keyframes btnPulseReady {
+    0%, 100% { box-shadow: 0 3px 12px rgba(0,0,0,0.12), var(--shadow-glow); }
+    50%       { box-shadow: 0 3px 18px rgba(0,0,0,0.15), 0 0 28px rgba(var(--glow-rgb, 123,155,166), 0.35); }
+}
+
+#punch-btn.ready-pulse {
+    animation: btnPulseReady 2.4s ease-in-out infinite;
+}
+
+/* —— 滚动条美化 —— */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    opacity: 0.4;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { opacity: 0.7; }
+
+/* —— Toast 升级动效 —— */
+@keyframes toastBounce {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.88); }
+    60%  { transform: translateX(-50%) translateY(4px) scale(1.03); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* Toast 弹出时使用 animation 覆盖 */
+
+/* —— 主题切换背景光晕动效 —— */
+body::before,
+body::after {
+    transition: background 0.8s ease, transform 0.8s ease;
+}
+
+/* —— 马卡龙主题背景光晕特别设定 —— */
+[data-theme="macaron"] body::before,
+[data-theme="macaron"] .bg-particles .bg-particle:nth-child(odd) {
+    background: #F4A7B9;
+}
+[data-theme="macaron"] body::after {
+    background: #9ECFCA;
+}
+
+/* —— 极光主题背景光晕 —— */
+[data-theme="aurora"] body::before {
+    background: #7C9EF8;
+}
+[data-theme="aurora"] body::after {
+    background: #9B84E8;
+}
+
+/* —— 极光主题渐变主按钮 —— */
+[data-theme="aurora"] .btn-primary {
+    background: linear-gradient(135deg, #7C9EF8 0%, #9B84E8 60%, #5ECCE8 100%);
+}
+[data-theme="aurora"] .stat-icon,
+[data-theme="aurora"] .ov-icon {
+    background: linear-gradient(135deg, #7C9EF8 0%, #9B84E8 100%);
+}
+
+/* —— 马卡龙主题渐变主按钮 —— */
+[data-theme="macaron"] .btn-primary {
+    background: linear-gradient(135deg, #F4A7B9 0%, #C8A8D8 50%, #9ECFCA 100%);
+}
+[data-theme="macaron"] .stat-icon,
+[data-theme="macaron"] .ov-icon {
+    background: linear-gradient(135deg, #F4A7B9 0%, #9ECFCA 100%);
+}
+
+/* —— 输入框 focus 光晕增强 —— */
+.form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--focus-ring-rgb, 123,155,166), 0.18), var(--shadow-xs);
+    transform: translateY(-1px);
+    transition: all 0.2s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+/* —— 心情按钮选中弹跳 —— */
+@keyframes moodBounce {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(0.92); }
+    70%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+.mood-btn.just-selected {
+    animation: moodBounce 0.35s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
 .goal-achieved {
